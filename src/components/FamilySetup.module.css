@@ -1,0 +1,54 @@
+.screen {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+  min-height: 100vh;
+  width: 100%;
+  max-width: 360px;
+  margin: 0 auto;
+  padding: 24px;
+}
+
+.title {
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: #f0e68c;
+}
+
+.subtitle {
+  font-size: 1rem;
+  color: rgba(255, 255, 255, 0.6);
+  text-align: center;
+}
+
+.codeBox {
+  padding: 16px 32px;
+  font-size: 2rem;
+  font-weight: 700;
+  letter-spacing: 8px;
+  color: #f0e68c;
+  background: rgba(240, 230, 140, 0.1);
+  border: 2px solid #f0e68c;
+  border-radius: 12px;
+  user-select: all;
+}
+
+.hint {
+  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.4);
+  text-align: center;
+}
+
+.continueBtn {
+  padding: 12px 32px;
+  font-size: 1.1rem;
+  font-weight: 700;
+  font-family: inherit;
+  color: #1a1a2e;
+  background: #f0e68c;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+}

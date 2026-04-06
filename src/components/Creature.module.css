@@ -1,0 +1,90 @@
+.creature {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  transition: transform 0.2s ease;
+}
+
+.body {
+  position: relative;
+  width: 200px;
+  height: 200px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.bodyEmoji {
+  font-size: 8rem;
+  line-height: 1;
+  transition: transform 0.3s ease;
+}
+
+.moodOverlay {
+  position: absolute;
+  top: 2px;
+  right: 8px;
+  font-size: 2.8rem;
+  line-height: 1;
+  filter: drop-shadow(0 2px 6px rgba(0,0,0,0.4));
+  z-index: 3;
+}
+
+.outfitOverlay {
+  position: absolute;
+  bottom: 4px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 3rem;
+  line-height: 1;
+  filter: drop-shadow(0 2px 6px rgba(0,0,0,0.3));
+  z-index: 2;
+}
+
+.accessoryOverlay {
+  position: absolute;
+  top: -10px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 3rem;
+  line-height: 1;
+  filter: drop-shadow(0 2px 6px rgba(0,0,0,0.3));
+  z-index: 4;
+}
+
+.creature.bounce .bodyEmoji {
+  animation: bounce 0.4s ease;
+}
+
+.creature.bounce .outfitOverlay,
+.creature.bounce .accessoryOverlay,
+.creature.bounce .moodOverlay {
+  animation: bounce 0.4s ease;
+}
+
+.name {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #f0e68c;
+}
+
+@keyframes bounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-12px); }
+}
+
+@keyframes wobble {
+  0%, 100% { transform: rotate(0deg); }
+  25% { transform: rotate(-5deg); }
+  75% { transform: rotate(5deg); }
+}
+
+.distressed .bodyEmoji {
+  animation: wobble 0.6s ease infinite;
+}
+
+.distressed .outfitOverlay,
+.distressed .accessoryOverlay {
+  animation: wobble 0.6s ease infinite;
+}

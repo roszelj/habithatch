@@ -1,0 +1,75 @@
+.screen {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+  min-height: 100vh;
+  width: 100%;
+  max-width: 320px;
+  margin: 0 auto;
+  padding: 24px;
+}
+
+.title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #f0e68c;
+}
+
+.subtitle {
+  font-size: 0.95rem;
+  color: rgba(255, 255, 255, 0.5);
+  text-align: center;
+}
+
+.pinInput {
+  width: 160px;
+  padding: 12px;
+  font-size: 2rem;
+  font-family: inherit;
+  text-align: center;
+  letter-spacing: 12px;
+  color: #fff;
+  background: rgba(255, 255, 255, 0.1);
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  border-radius: 12px;
+  outline: none;
+}
+
+.pinInput:focus {
+  border-color: #f0e68c;
+}
+
+.confirmBtn {
+  padding: 10px 28px;
+  font-size: 1rem;
+  font-weight: 600;
+  font-family: inherit;
+  color: #1a1a2e;
+  background: #f0e68c;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+.confirmBtn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.cancelBtn {
+  padding: 8px 20px;
+  font-size: 0.9rem;
+  font-family: inherit;
+  color: rgba(255, 255, 255, 0.5);
+  background: none;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.error {
+  font-size: 0.9rem;
+  color: #e74c3c;
+}

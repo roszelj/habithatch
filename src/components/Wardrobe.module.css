@@ -1,0 +1,54 @@
+.wardrobe {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+  width: 100%;
+}
+
+.sectionTitle {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #f0e68c;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  width: 100%;
+}
+
+.card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 10px 6px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 2px solid rgba(255, 255, 255, 0.12);
+  border-radius: 10px;
+  cursor: pointer;
+  font-family: inherit;
+  color: #fff;
+  transition: border-color 0.15s ease;
+}
+
+.card:hover {
+  border-color: rgba(255, 255, 255, 0.4);
+}
+
+.card.selected {
+  border-color: #f0e68c;
+  background: rgba(240, 230, 140, 0.12);
+}
+
+.cardEmoji {
+  font-size: 1.8rem;
+}
+
+.cardLabel {
+  font-size: 0.7rem;
+  text-align: center;
+  opacity: 0.7;
+}

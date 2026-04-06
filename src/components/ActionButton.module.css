@@ -1,0 +1,47 @@
+.button {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 18px;
+  font-size: 1rem;
+  font-weight: 600;
+  font-family: inherit;
+  color: #fff;
+  background: rgba(255, 255, 255, 0.12);
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  border-radius: 12px;
+  cursor: pointer;
+  transition: transform 0.1s ease, background 0.2s ease;
+  user-select: none;
+}
+
+.button:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.button:active {
+  transform: scale(0.92);
+}
+
+.emoji {
+  font-size: 1.3rem;
+}
+
+.cost {
+  font-size: 0.8rem;
+  opacity: 0.6;
+  margin-left: 2px;
+}
+
+.disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.disabled:hover {
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.disabled:active {
+  transform: none;
+}

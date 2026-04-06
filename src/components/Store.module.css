@@ -1,0 +1,145 @@
+.store {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  width: 100%;
+}
+
+.coinDisplay {
+  text-align: center;
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: #f0e68c;
+}
+
+.sectionTitle {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #f0e68c;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 8px;
+}
+
+.card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 10px 6px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 2px solid rgba(255, 255, 255, 0.12);
+  border-radius: 10px;
+  font-family: inherit;
+  color: #fff;
+}
+
+.card.equipped {
+  border-color: #2ecc71;
+  background: rgba(46, 204, 113, 0.1);
+}
+
+.cardEmoji {
+  font-size: 1.8rem;
+}
+
+.cardName {
+  font-size: 0.7rem;
+  text-align: center;
+  opacity: 0.8;
+}
+
+.ownedBadge {
+  font-size: 0.65rem;
+  color: #2ecc71;
+  font-weight: 600;
+}
+
+.price {
+  font-size: 0.75rem;
+  color: #f0e68c;
+  font-weight: 600;
+}
+
+.price.cantAfford {
+  opacity: 0.4;
+}
+
+.buyBtn {
+  padding: 3px 10px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  font-family: inherit;
+  color: #1a1a2e;
+  background: #f0e68c;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.buyBtn:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+.equipBtn {
+  padding: 3px 10px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  font-family: inherit;
+  color: #fff;
+  background: rgba(46, 204, 113, 0.3);
+  border: 1px solid #2ecc71;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.redeemBtn {
+  padding: 3px 10px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  font-family: inherit;
+  color: #1a1a2e;
+  background: #e74c3c;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.redeemBtn:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+.unequipBtn {
+  padding: 3px 10px;
+  font-size: 0.75rem;
+  font-family: inherit;
+  color: rgba(255, 255, 255, 0.5);
+  background: none;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.noneCard {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 10px 6px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 2px solid rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
+  cursor: pointer;
+  font-family: inherit;
+  color: rgba(255, 255, 255, 0.4);
+}
+
+.noneCard.equipped {
+  border-color: #2ecc71;
+  color: #2ecc71;
+}

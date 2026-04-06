@@ -1,0 +1,73 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.streakRow {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.flame {
+  transition: font-size 0.3s ease;
+}
+
+.flame.small {
+  font-size: 1.2rem;
+}
+
+.flame.medium {
+  font-size: 1.6rem;
+}
+
+.flame.large {
+  font-size: 2rem;
+}
+
+.flame.epic {
+  font-size: 2.5rem;
+  animation: pulse 1s ease infinite;
+}
+
+.count {
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: #f0e68c;
+}
+
+.label {
+  font-size: 0.75rem;
+  color: rgba(255, 255, 255, 0.4);
+}
+
+.best {
+  font-size: 0.7rem;
+  color: rgba(255, 255, 255, 0.3);
+}
+
+.celebration {
+  font-size: 1rem;
+  color: #2ecc71;
+  font-weight: 600;
+  animation: fadeSlideIn 0.4s ease;
+}
+
+.breakMessage {
+  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.5);
+  text-align: center;
+  animation: fadeSlideIn 0.4s ease;
+}
+
+@keyframes pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.15); }
+}
+
+@keyframes fadeSlideIn {
+  from { opacity: 0; transform: translateY(-6px); }
+  to { opacity: 1; transform: translateY(0); }
+}

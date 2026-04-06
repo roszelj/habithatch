@@ -1,0 +1,92 @@
+.screen {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 24px;
+  min-height: 100vh;
+  width: 100%;
+  max-width: 400px;
+  margin: 0 auto;
+  padding: 24px;
+}
+
+.title {
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: #f0e68c;
+  letter-spacing: 2px;
+}
+
+.sprite {
+  font-size: 5rem;
+  line-height: 1;
+}
+
+.prompt {
+  font-size: 1.1rem;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.inputRow {
+  display: flex;
+  gap: 8px;
+  width: 100%;
+}
+
+.nameInput {
+  flex: 1;
+  padding: 10px 14px;
+  font-size: 1.1rem;
+  font-family: inherit;
+  color: #fff;
+  background: rgba(255, 255, 255, 0.1);
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  border-radius: 10px;
+  outline: none;
+  transition: border-color 0.2s ease;
+}
+
+.nameInput:focus {
+  border-color: #f0e68c;
+}
+
+.nameInput::placeholder {
+  color: rgba(255, 255, 255, 0.3);
+}
+
+.confirmBtn {
+  padding: 10px 20px;
+  font-size: 1.1rem;
+  font-weight: 600;
+  font-family: inherit;
+  color: #1a1a2e;
+  background: #f0e68c;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: transform 0.1s ease, opacity 0.2s ease;
+}
+
+.confirmBtn:hover {
+  opacity: 0.9;
+}
+
+.confirmBtn:active {
+  transform: scale(0.95);
+}
+
+.confirmBtn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.charCount {
+  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.4);
+}
+
+.error {
+  font-size: 0.9rem;
+  color: #e74c3c;
+}

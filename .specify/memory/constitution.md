@@ -1,50 +1,100 @@
-# [PROJECT_NAME] Constitution
-<!-- Example: Spec Constitution, TaskFlow Constitution, etc. -->
+<!--
+Sync Impact Report
+- Version change: 0.0.0 → 1.0.0
+- Modified principles: N/A (initial creation)
+- Added sections:
+  - Core Principles (3): Fun-First Design, Ship & Iterate, Kid-Safe Always
+  - Development Workflow
+  - Governance
+- Removed sections:
+  - [SECTION_2_NAME] / [SECTION_3_NAME] replaced with concrete sections
+- Templates requiring updates:
+  - .specify/templates/plan-template.md — ✅ no updates needed (Constitution Check is dynamic)
+  - .specify/templates/spec-template.md — ✅ no updates needed (generic structure)
+  - .specify/templates/tasks-template.md — ✅ no updates needed (generic structure)
+- Follow-up TODOs: none
+-->
+
+# Terragucci Constitution
 
 ## Core Principles
 
-### [PRINCIPLE_1_NAME]
-<!-- Example: I. Library-First -->
-[PRINCIPLE_1_DESCRIPTION]
-<!-- Example: Every feature starts as a standalone library; Libraries must be self-contained, independently testable, documented; Clear purpose required - no organizational-only libraries -->
+### I. Fun-First Design
 
-### [PRINCIPLE_2_NAME]
-<!-- Example: II. CLI Interface -->
-[PRINCIPLE_2_DESCRIPTION]
-<!-- Example: Every library exposes functionality via CLI; Text in/out protocol: stdin/args → stdout, errors → stderr; Support JSON + human-readable formats -->
+Every feature MUST prioritize player delight and engagement above
+technical elegance. Decisions about mechanics, UI, and feedback loops
+MUST be evaluated through the lens of "is this fun for a kid?"
 
-### [PRINCIPLE_3_NAME]
-<!-- Example: III. Test-First (NON-NEGOTIABLE) -->
-[PRINCIPLE_3_DESCRIPTION]
-<!-- Example: TDD mandatory: Tests written → User approved → Tests fail → Then implement; Red-Green-Refactor cycle strictly enforced -->
+- Interactions MUST feel responsive and rewarding (visual/audio feedback
+  within 200ms of player action).
+- Creature state changes (hunger, happiness, energy) MUST be
+  communicated through clear, playful visuals — never raw numbers alone.
+- New features MUST be playtestable in isolation before integration.
 
-### [PRINCIPLE_4_NAME]
-<!-- Example: IV. Integration Testing -->
-[PRINCIPLE_4_DESCRIPTION]
-<!-- Example: Focus areas requiring integration tests: New library contract tests, Contract changes, Inter-service communication, Shared schemas -->
+**Rationale**: A kids game lives or dies on whether it sparks joy.
+Technical correctness without fun is a failed product.
 
-### [PRINCIPLE_5_NAME]
-<!-- Example: V. Observability, VI. Versioning & Breaking Changes, VII. Simplicity -->
-[PRINCIPLE_5_DESCRIPTION]
-<!-- Example: Text I/O ensures debuggability; Structured logging required; Or: MAJOR.MINOR.BUILD format; Or: Start simple, YAGNI principles -->
+### II. Ship & Iterate
 
-## [SECTION_2_NAME]
-<!-- Example: Additional Constraints, Security Requirements, Performance Standards, etc. -->
+Working software beats perfect plans. Ship the smallest playable
+increment, get feedback, and improve.
 
-[SECTION_2_CONTENT]
-<!-- Example: Technology stack requirements, compliance standards, deployment policies, etc. -->
+- Features MUST be scoped to deliverable increments that can be
+  tested within a single development cycle.
+- Refactoring is permitted only when it unblocks a concrete next
+  feature — not for speculative improvement.
+- Prototypes and experiments are encouraged; delete them without guilt
+  when they don't work out.
 
-## [SECTION_3_NAME]
-<!-- Example: Development Workflow, Review Process, Quality Gates, etc. -->
+**Rationale**: Iteration speed is the primary competitive advantage
+for a small project. Overplanning kills momentum.
 
-[SECTION_3_CONTENT]
-<!-- Example: Code review requirements, testing gates, deployment approval process, etc. -->
+### III. Kid-Safe Always
+
+All content, data handling, and interactions MUST be appropriate and
+safe for children. This principle is NON-NEGOTIABLE and overrides
+all other principles when in conflict.
+
+- The game MUST NOT collect, store, or transmit personally
+  identifiable information from players.
+- All text, imagery, and audio MUST be age-appropriate.
+- Network features (if any) MUST default to off and require explicit
+  opt-in with guardian consent.
+- Third-party dependencies MUST be audited for kid-safety compliance
+  before adoption.
+
+**Rationale**: Legal (COPPA) and ethical obligation. A breach of
+child safety is an existential risk to the project.
+
+## Development Workflow
+
+- **Branching**: Feature branches with sequential numbering per the
+  Specify workflow. Merge to main when playable and tested.
+- **Testing**: Tests are written when they add confidence — not as
+  ceremony. Focus testing effort on game-logic correctness (creature
+  state machines, timer behavior, save/load) rather than UI pixel
+  tests.
+- **Code Review**: Self-review is acceptable for small changes. Any
+  change touching kid-safety (Principle III) MUST be reviewed by at
+  least one other person or explicitly justified in the commit message.
+- **Releases**: Ship early, ship often. Version tags on main when a
+  milestone is playable end-to-end.
 
 ## Governance
-<!-- Example: Constitution supersedes all other practices; Amendments require documentation, approval, migration plan -->
 
-[GOVERNANCE_RULES]
-<!-- Example: All PRs/reviews must verify compliance; Complexity must be justified; Use [GUIDANCE_FILE] for runtime development guidance -->
+This constitution is the highest-authority document for the Terragucci
+project. All development decisions MUST be consistent with these
+principles.
 
-**Version**: [CONSTITUTION_VERSION] | **Ratified**: [RATIFICATION_DATE] | **Last Amended**: [LAST_AMENDED_DATE]
-<!-- Example: Version: 2.1.1 | Ratified: 2025-06-13 | Last Amended: 2025-07-16 -->
+- **Amendments**: Any change to this constitution MUST be documented
+  with a version bump, rationale, and updated date. Changes that remove
+  or redefine a principle require a MAJOR version bump. New principles
+  or material expansions require MINOR. Wording fixes require PATCH.
+- **Compliance**: When planning a feature (via `/speckit-plan`), the
+  Constitution Check gate MUST verify alignment with all three
+  principles before implementation begins.
+- **Conflict resolution**: If two principles conflict, Principle III
+  (Kid-Safe Always) wins. Between I and II, favor whichever unblocks
+  shipping a playable increment.
+
+**Version**: 1.0.0 | **Ratified**: 2026-04-02 | **Last Amended**: 2026-04-02

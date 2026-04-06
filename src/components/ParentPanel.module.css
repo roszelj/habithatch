@@ -1,0 +1,210 @@
+.panel {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  width: 100%;
+  flex: 1;
+  overflow-y: auto;
+}
+
+.childSelector {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.childBtn {
+  padding: 6px 12px;
+  font-size: 0.85rem;
+  font-family: inherit;
+  color: rgba(255, 255, 255, 0.5);
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.childBtnActive {
+  color: #f0e68c;
+  border-color: #f0e68c;
+  background: rgba(240, 230, 140, 0.1);
+}
+
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.sectionTitle {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #f0e68c;
+}
+
+.dashboard {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.stat {
+  padding: 8px 12px;
+  background: rgba(255, 255, 255, 0.06);
+  border-radius: 8px;
+  font-size: 0.85rem;
+}
+
+.statLabel {
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 0.75rem;
+}
+
+.statValue {
+  font-weight: 600;
+  font-size: 1.1rem;
+}
+
+.pendingList {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.pendingItem {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  background: rgba(255, 200, 50, 0.1);
+  border: 1px solid rgba(255, 200, 50, 0.3);
+  border-radius: 8px;
+}
+
+.pendingName {
+  flex: 1;
+  font-size: 0.95rem;
+}
+
+.pendingCategory {
+  font-size: 0.75rem;
+  color: rgba(255, 255, 255, 0.4);
+}
+
+.approveBtn {
+  padding: 4px 12px;
+  font-size: 0.85rem;
+  font-family: inherit;
+  font-weight: 600;
+  color: #1a1a2e;
+  background: #2ecc71;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.rejectBtn {
+  padding: 4px 12px;
+  font-size: 0.85rem;
+  font-family: inherit;
+  font-weight: 600;
+  color: #fff;
+  background: #e74c3c;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.noPending {
+  color: rgba(255, 255, 255, 0.4);
+  font-size: 0.9rem;
+  text-align: center;
+  padding: 12px;
+}
+
+.addRow {
+  display: flex;
+  gap: 6px;
+}
+
+.addInput {
+  flex: 1;
+  padding: 6px 10px;
+  font-size: 0.9rem;
+  font-family: inherit;
+  color: #fff;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 6px;
+  outline: none;
+}
+
+.addInput:focus {
+  border-color: #f0e68c;
+}
+
+.addBtn {
+  padding: 6px 12px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  font-family: inherit;
+  color: #1a1a2e;
+  background: #f0e68c;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.addBtn:disabled {
+  opacity: 0.4;
+}
+
+.choreItem {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 8px;
+  font-size: 0.9rem;
+}
+
+.choreItemName {
+  flex: 1;
+}
+
+.removeBtn {
+  padding: 2px 8px;
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.3);
+  background: none;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+.removeBtn:hover {
+  color: #e74c3c;
+  border-color: #e74c3c;
+}
+
+.tabs {
+  display: flex;
+  gap: 8px;
+}
+
+.tab {
+  padding: 6px 14px;
+  font-size: 0.85rem;
+  font-family: inherit;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.5);
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.tab.active {
+  color: #f0e68c;
+  border-color: #f0e68c;
+}

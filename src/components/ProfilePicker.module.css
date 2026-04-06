@@ -1,0 +1,88 @@
+.screen {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 24px;
+  min-height: 100vh;
+  width: 100%;
+  max-width: 450px;
+  margin: 0 auto;
+  padding: 24px;
+}
+
+.title {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #f0e68c;
+  letter-spacing: 2px;
+}
+
+.subtitle {
+  font-size: 1.1rem;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  width: 100%;
+}
+
+.card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 18px 12px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 2px solid rgba(255, 255, 255, 0.15);
+  border-radius: 14px;
+  cursor: pointer;
+  transition: transform 0.15s ease, border-color 0.2s ease;
+  font-family: inherit;
+  color: #fff;
+}
+
+.card:hover {
+  transform: scale(1.04);
+  border-color: #f0e68c;
+}
+
+.cardSprite {
+  font-size: 3rem;
+}
+
+.cardName {
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.addCard {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 18px 12px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 2px dashed rgba(255, 255, 255, 0.15);
+  border-radius: 14px;
+  cursor: pointer;
+  font-family: inherit;
+  color: rgba(255, 255, 255, 0.4);
+  transition: border-color 0.2s ease, color 0.2s ease;
+}
+
+.addCard:hover {
+  border-color: #f0e68c;
+  color: #f0e68c;
+}
+
+.addIcon {
+  font-size: 2.5rem;
+}
+
+.addLabel {
+  font-size: 0.9rem;
+}
