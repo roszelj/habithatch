@@ -2,7 +2,7 @@ import { useReducer } from 'react';
 import {
   type CreatureState, type CreatureAction, type CreatureType,
   type CategoryPoints, type Mood,
-  getMood, clamp, TIME_ACTIONS, MAX_POINTS, HEALTH_DECAY_RATE, createDefaultPoints,
+  getMood, clamp, TIME_ACTIONS, MAX_POINTS, HEALTH_DECAY_RATE, FEED_HEALTH_RESTORE, createDefaultPoints,
 } from '../models/types';
 
 function createInitialState(name: string, creatureType: CreatureType, health = 100, points?: CategoryPoints): CreatureState {
@@ -24,6 +24,8 @@ function creatureReducer(state: CreatureState, action: CreatureAction): Creature
   }
 
   switch (action.type) {
+    case 'feed':
+      return { ...state, health: clamp(state.health + FEED_HEALTH_RESTORE, 0, 100) };
     case 'decay': {
       const dt = action.delta / 1000;
       return { ...state, health: clamp(state.health - HEALTH_DECAY_RATE * dt, 0, 100) };

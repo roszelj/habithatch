@@ -4,7 +4,49 @@
   gap: 16px;
   width: 100%;
   flex: 1;
+  min-height: 0;
   overflow-y: auto;
+}
+
+.dayTypeSection {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 10px;
+  padding: 12px;
+}
+
+.dayTypeHeader {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #c4b5fd;
+  padding-bottom: 4px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.chorePointsRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 0;
+}
+
+.chorePointsLabel {
+  flex: 1;
+  font-size: 0.9rem;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.chorePointsInput {
+  width: 52px;
+  padding: 4px 6px;
+  border-radius: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.08);
+  color: #fff;
+  font-size: 0.9rem;
+  text-align: center;
 }
 
 .childSelector {
@@ -129,14 +171,18 @@
 
 .addInput {
   flex: 1;
-  padding: 6px 10px;
-  font-size: 0.9rem;
+  padding: 12px;
+  font-size: 1rem;
   font-family: inherit;
   color: #fff;
   background: rgba(255, 255, 255, 0.1);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  border-radius: 6px;
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  border-radius: 10px;
   outline: none;
+}
+
+.addInput::placeholder {
+  color: rgba(255, 255, 255, 0.3);
 }
 
 .addInput:focus {
@@ -144,14 +190,14 @@
 }
 
 .addBtn {
-  padding: 6px 12px;
-  font-size: 0.9rem;
+  padding: 12px 16px;
+  font-size: 1rem;
   font-weight: 600;
   font-family: inherit;
   color: #1a1a2e;
   background: #f0e68c;
   border: none;
-  border-radius: 6px;
+  border-radius: 10px;
   cursor: pointer;
 }
 
@@ -189,14 +235,21 @@
 
 .tabs {
   display: flex;
-  gap: 8px;
+  gap: 6px;
+  width: 100%;
 }
 
 .tab {
-  padding: 6px 14px;
-  font-size: 0.85rem;
+  flex: 1;
+  min-width: 0;
+  padding: 8px 4px;
+  font-size: 0.75rem;
   font-family: inherit;
   font-weight: 600;
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
   color: rgba(255, 255, 255, 0.5);
   background: rgba(255, 255, 255, 0.06);
   border: 1px solid rgba(255, 255, 255, 0.1);
@@ -207,4 +260,95 @@
 .tab.active {
   color: #f0e68c;
   border-color: #f0e68c;
+  background: rgba(240, 230, 140, 0.08);
+}
+
+.allKidsRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.7);
+  cursor: pointer;
+  padding: 4px 0;
+}
+
+.confirmMessage {
+  color: #2ecc71;
+  font-size: 0.85rem;
+  font-weight: 600;
+  padding: 4px 0;
+}
+
+.joinCodeBanner {
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.5);
+  text-align: center;
+}
+
+.joinCode {
+  font-weight: 700;
+  color: #f0e68c;
+  letter-spacing: 0.15em;
+}
+
+.editNameRow {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 8px 0;
+}
+
+.nameDisplay {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.9rem;
+}
+
+.nameLabel {
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 0.8rem;
+}
+
+.nameValue {
+  color: #fff;
+  font-weight: 600;
+}
+
+.namePlaceholder {
+  color: rgba(255, 255, 255, 0.3);
+  font-style: italic;
+  font-weight: 400;
+}
+
+.creatureLabel {
+  font-size: 0.75rem;
+  color: rgba(255, 255, 255, 0.35);
+}
+
+.editBtn {
+  padding: 2px 6px;
+  font-size: 0.75rem;
+  background: none;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 4px;
+  cursor: pointer;
+  color: rgba(255, 255, 255, 0.4);
+}
+
+.editBtn:hover {
+  border-color: #f0e68c;
+  color: #f0e68c;
+}
+
+.cancelBtn {
+  padding: 6px 12px;
+  font-size: 0.9rem;
+  font-family: inherit;
+  color: rgba(255, 255, 255, 0.6);
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 6px;
+  cursor: pointer;
 }

@@ -3,6 +3,9 @@
   flex-direction: column;
   gap: 16px;
   width: 100%;
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
 }
 
 .coinDisplay {
@@ -44,6 +47,13 @@
 
 .cardEmoji {
   font-size: 1.8rem;
+}
+
+.habitatCardImage {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  object-fit: cover;
+  border-radius: 6px;
 }
 
 .cardName {

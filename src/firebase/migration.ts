@@ -1,7 +1,18 @@
 import { loadAppData, clearAllData } from '../hooks/useSaveData';
 import { createCloudProfile } from './profiles';
-import { updateFamilyRewards } from './families';
-import { type AppData } from '../models/types';
+import { updateFamilyRewards, updateFamilyPin } from './families';
+import { type CreatureType } from '../models/types';
+
+const LEGACY_CREATURE_MAP: Record<string, CreatureType> = {
+  bird: 'chick',
+  turtle: 'gecko',
+  cat: 'calico',
+  dog: 'corgi',
+};
+
+export function migrateCreatureType(type: string): CreatureType {
+  return (LEGACY_CREATURE_MAP[type] ?? type) as CreatureType;
+}
 
 export function hasLocalData(): boolean {
   const data = loadAppData();
@@ -20,6 +31,11 @@ export async function migrateLocalToCloud(familyId: string): Promise<number> {
   // Migrate reward presents
   if (data.rewardPresents && data.rewardPresents.length > 0) {
     await updateFamilyRewards(familyId, data.rewardPresents);
+  }
+
+  // Migrate parent PIN
+  if (data.parentPin) {
+    await updateFamilyPin(familyId, data.parentPin);
   }
 
   // Clear local data after successful migration

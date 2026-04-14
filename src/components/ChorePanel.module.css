@@ -4,7 +4,18 @@
   gap: 20px;
   width: 100%;
   flex: 1;
+  min-height: 0;
   overflow-y: auto;
+}
+
+.dayTypeLabel {
+  text-align: center;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #7c3aed;
+  background: #ede9fe;
+  border-radius: 8px;
+  padding: 6px 12px;
 }
 
 .section {
@@ -26,6 +37,35 @@
   font-size: 0.85rem;
   font-weight: 400;
   color: rgba(255, 255, 255, 0.5);
+}
+
+.refreshBtn {
+  padding: 10px 16px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  font-family: inherit;
+  color: #1a1a2e;
+  background: #f0e68c;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  text-align: center;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  animation: refreshPulse 2s ease-in-out infinite;
+}
+
+.refreshBtn:hover {
+  background: #f5efaa;
+  transform: scale(1.02);
+}
+
+.refreshBtn:active {
+  transform: scale(0.98);
+}
+
+@keyframes refreshPulse {
+  0%, 100% { box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2); }
+  50% { box-shadow: 0 2px 16px rgba(240, 230, 140, 0.5); }
 }
 
 .resetAllBtn {

@@ -1,9 +1,12 @@
 import { useState } from 'react';
 import {
-  type ChildProfile, type TimeActionType, type RewardPresent,
-  TIME_ACTIONS, CREATURE_SPRITES,
+  type ChildProfile, type TimeActionType, type RewardPresent, type CategoryPoints,
+  TIME_ACTIONS, POINTS_PER_CHORE,
 } from '../models/types';
+import { CreatureSprite } from './CreatureSprite';
 import styles from './ParentPanel.module.css';
+
+type DayType = 'weekday' | 'weekend';
 
 interface PendingItem {
   profileId: string;
@@ -12,35 +15,49 @@ interface PendingItem {
   category: TimeActionType;
   choreId: string;
   choreName: string;
+  dayType: DayType;
 }
 
 interface ParentPanelProps {
   profiles: ChildProfile[];
   activeProfileId: string;
-  onAddChore: (profileId: string, category: TimeActionType, name: string) => void;
-  onRemoveChore: (profileId: string, category: TimeActionType, id: string) => void;
-  onApprove: (profileId: string, category: TimeActionType, id: string) => void;
-  onReject: (profileId: string, category: TimeActionType, id: string) => void;
+  onAddChore: (profileId: string, category: TimeActionType, name: string, dayType: DayType) => void;
+  onAddChoreAllKids: (category: TimeActionType, name: string, dayType: DayType) => void;
+  onRemoveChore: (profileId: string, category: TimeActionType, id: string, dayType: DayType) => void;
+  onApprove: (profileId: string, category: TimeActionType, id: string, dayType: DayType) => void;
+  onReject: (profileId: string, category: TimeActionType, id: string, dayType: DayType) => void;
   onBonus: (profileId: string, category: TimeActionType, amount: number, reason: string) => void;
   rewardPresents: RewardPresent[];
   onAddReward: (name: string, price: number) => void;
   onRemoveReward: (id: string) => void;
+  onFulfillReward?: (profileId: string, redeemedRewardId: string, rewardName: string) => void;
+  joinCode?: string;
+  onUpdateChildName?: (profileId: string, childName: string) => void;
+  onUpdateChorePoints?: (profileId: string, chorePoints: CategoryPoints) => void;
+}
+
+function displayName(p: ChildProfile): string {
+  return p.childName || p.creatureName;
 }
 
 function collectPending(profiles: ChildProfile[]): PendingItem[] {
   const items: PendingItem[] = [];
   for (const profile of profiles) {
-    for (const action of TIME_ACTIONS) {
-      for (const chore of profile.chores[action.type]) {
-        if (chore.status === 'pending') {
-          items.push({
-            profileId: profile.id,
-            childName: profile.creatureName,
-            creatureType: profile.creatureType,
-            category: action.type,
-            choreId: chore.id,
-            choreName: chore.name,
-          });
+    for (const dayType of ['weekday', 'weekend'] as DayType[]) {
+      const choreList = dayType === 'weekend' ? profile.weekendChores : profile.weekdayChores;
+      for (const action of TIME_ACTIONS) {
+        for (const chore of choreList[action.type]) {
+          if (chore.status === 'pending') {
+            items.push({
+              profileId: profile.id,
+              childName: displayName(profile),
+              creatureType: profile.creatureType,
+              category: action.type,
+              choreId: chore.id,
+              choreName: chore.name,
+              dayType,
+            });
+          }
         }
       }
     }
@@ -50,28 +67,38 @@ function collectPending(profiles: ChildProfile[]): PendingItem[] {
 
 export function ParentPanel({
   profiles, activeProfileId,
-  onAddChore, onRemoveChore, onApprove, onReject, onBonus,
-  rewardPresents, onAddReward, onRemoveReward,
+  onAddChore, onAddChoreAllKids, onRemoveChore, onApprove, onReject, onBonus,
+  rewardPresents, onAddReward, onRemoveReward, onFulfillReward, joinCode, onUpdateChildName, onUpdateChorePoints,
 }: ParentPanelProps) {
   const [tab, setTab] = useState<'pending' | 'manage' | 'bonus' | 'rewards' | 'dashboard'>('pending');
   const [selectedChild, setSelectedChild] = useState(activeProfileId);
   const [newChoreInputs, setNewChoreInputs] = useState<Record<string, string>>({});
+  const [forAllKids, setForAllKids] = useState(false);
+  const [confirmMessage, setConfirmMessage] = useState('');
   const [bonusCategory, setBonusCategory] = useState<TimeActionType>('morning');
   const [bonusAmount, setBonusAmount] = useState('');
   const [bonusReason, setBonusReason] = useState('');
   const [bonusMessage, setBonusMessage] = useState('');
   const [newRewardName, setNewRewardName] = useState('');
   const [newRewardPrice, setNewRewardPrice] = useState('');
+  const [editingName, setEditingName] = useState(false);
+  const [editNameValue, setEditNameValue] = useState('');
 
   const allPending = collectPending(profiles);
   const selectedProfile = profiles.find(p => p.id === selectedChild) ?? profiles[0];
 
-  function handleAdd(category: TimeActionType) {
-    const val = newChoreInputs[category] || '';
-    if (val.trim()) {
-      onAddChore(selectedChild, category, val);
-      setNewChoreInputs(prev => ({ ...prev, [category]: '' }));
+  function handleAdd(category: TimeActionType, dayType: DayType) {
+    const key = `${dayType}-${category}`;
+    const val = newChoreInputs[key] || '';
+    if (!val.trim()) return;
+    if (forAllKids) {
+      onAddChoreAllKids(category, val, dayType);
+      setConfirmMessage(`Added to ${profiles.length} kid${profiles.length !== 1 ? 's' : ''}!`);
+      setTimeout(() => setConfirmMessage(''), 2000);
+    } else {
+      onAddChore(selectedChild, category, val, dayType);
     }
+    setNewChoreInputs(prev => ({ ...prev, [key]: '' }));
   }
 
   const displayStreak = selectedProfile
@@ -80,6 +107,7 @@ export function ParentPanel({
 
   return (
     <div className={styles.panel}>
+      {joinCode && <div className={styles.joinCodeBanner}>Family Code: <span className={styles.joinCode}>{joinCode}</span></div>}
       <div className={styles.tabs}>
         <button
           className={`${styles.tab} ${tab === 'pending' ? styles.active : ''}`}
@@ -103,7 +131,7 @@ export function ParentPanel({
           className={`${styles.tab} ${tab === 'rewards' ? styles.active : ''}`}
           onClick={() => setTab('rewards')}
         >
-          {'\u{1F381}'} Rewards
+          {'\u{1F381}'}Rewards
         </button>
         <button
           className={`${styles.tab} ${tab === 'dashboard' ? styles.active : ''}`}
@@ -122,7 +150,7 @@ export function ParentPanel({
               className={`${styles.childBtn} ${p.id === selectedChild ? styles.childBtnActive : ''}`}
               onClick={() => setSelectedChild(p.id)}
             >
-              {CREATURE_SPRITES[p.creatureType].happy} {p.creatureName}
+              <CreatureSprite creatureType={p.creatureType} size={24} /> {displayName(p)}
             </button>
           ))}
         </div>
@@ -140,14 +168,14 @@ export function ParentPanel({
                   <div style={{ flex: 1 }}>
                     <div className={styles.pendingName}>{p.choreName}</div>
                     <div className={styles.pendingCategory}>
-                      {CREATURE_SPRITES[p.creatureType as keyof typeof CREATURE_SPRITES].happy}{' '}
+                      <CreatureSprite creatureType={p.creatureType as import('../models/types').CreatureType} size={20} />{' '}
                       {p.childName} {'\u{2022}'} {p.category}
                     </div>
                   </div>
-                  <button className={styles.approveBtn} onClick={() => onApprove(p.profileId, p.category, p.choreId)}>
+                  <button className={styles.approveBtn} onClick={() => onApprove(p.profileId, p.category, p.choreId, p.dayType)}>
                     {'\u{2705}'}
                   </button>
-                  <button className={styles.rejectBtn} onClick={() => onReject(p.profileId, p.category, p.choreId)}>
+                  <button className={styles.rejectBtn} onClick={() => onReject(p.profileId, p.category, p.choreId, p.dayType)}>
                     {'\u{274C}'}
                   </button>
                 </div>
@@ -160,39 +188,93 @@ export function ParentPanel({
       {tab === 'manage' && selectedProfile && (
         <div className={styles.section}>
           <div className={styles.sectionTitle}>
-            Manage Chores for {selectedProfile.creatureName}
+            Manage Chores for {displayName(selectedProfile)}
           </div>
-          {TIME_ACTIONS.map(action => (
-            <div key={action.type} className={styles.section}>
-              <div style={{ fontSize: '0.9rem', fontWeight: 600, color: 'rgba(255,255,255,0.7)' }}>
-                {action.emoji} {action.label}
+          {profiles.length > 1 && (
+            <label className={styles.allKidsRow}>
+              <input
+                type="checkbox"
+                checked={forAllKids}
+                onChange={e => setForAllKids(e.target.checked)}
+              />
+              Add for all kids
+            </label>
+          )}
+          {confirmMessage && (
+            <div className={styles.confirmMessage}>{confirmMessage}</div>
+          )}
+          {(['weekday', 'weekend'] as DayType[]).map(dayType => {
+            const choreList = dayType === 'weekend' ? selectedProfile.weekendChores : selectedProfile.weekdayChores;
+            const label = dayType === 'weekday' ? 'Weekday Chores (Mon-Fri)' : 'Weekend Chores (Sat-Sun)';
+            return (
+              <div key={dayType} className={styles.dayTypeSection}>
+                <div className={styles.dayTypeHeader}>{label}</div>
+                {TIME_ACTIONS.map(action => {
+                  const inputKey = `${dayType}-${action.type}`;
+                  return (
+                    <div key={action.type} className={styles.section}>
+                      <div style={{ fontSize: '0.9rem', fontWeight: 600, color: 'rgba(255,255,255,0.7)' }}>
+                        {action.emoji} {action.label}
+                      </div>
+                      {choreList[action.type].map(c => (
+                        <div key={c.id} className={styles.choreItem}>
+                          <span className={styles.choreItemName}>{c.name}</span>
+                          <button className={styles.removeBtn} onClick={() => onRemoveChore(selectedChild, action.type, c.id, dayType)}>x</button>
+                        </div>
+                      ))}
+                      <form className={styles.addRow} onSubmit={(e) => { e.preventDefault(); handleAdd(action.type, dayType); }}>
+                        <input
+                          className={styles.addInput}
+                          type="text"
+                          value={newChoreInputs[inputKey] || ''}
+                          onChange={e => setNewChoreInputs(prev => ({ ...prev, [inputKey]: e.target.value.slice(0, 40) }))}
+                          placeholder={`Add ${action.label.toLowerCase()} chore...`}
+                          maxLength={40}
+                        />
+                        <button className={styles.addBtn} type="submit" disabled={!(newChoreInputs[inputKey] || '').trim()}>+</button>
+                      </form>
+                    </div>
+                  );
+                })}
               </div>
-              {selectedProfile.chores[action.type].map(c => (
-                <div key={c.id} className={styles.choreItem}>
-                  <span className={styles.choreItemName}>{c.name}</span>
-                  <button className={styles.removeBtn} onClick={() => onRemoveChore(selectedChild, action.type, c.id)}>x</button>
-                </div>
-              ))}
-              <form className={styles.addRow} onSubmit={(e) => { e.preventDefault(); handleAdd(action.type); }}>
-                <input
-                  className={styles.addInput}
-                  type="text"
-                  value={newChoreInputs[action.type] || ''}
-                  onChange={e => setNewChoreInputs(prev => ({ ...prev, [action.type]: e.target.value.slice(0, 40) }))}
-                  placeholder={`Add ${action.label.toLowerCase()} chore...`}
-                  maxLength={40}
-                />
-                <button className={styles.addBtn} type="submit" disabled={!(newChoreInputs[action.type] || '').trim()}>+</button>
-              </form>
+            );
+          })}
+          {onUpdateChorePoints && (
+            <div className={styles.dayTypeSection}>
+              <div className={styles.dayTypeHeader}>Points Per Chore</div>
+              <div style={{ fontSize: '0.8rem', color: 'rgba(255,255,255,0.5)', marginBottom: 4 }}>
+                How many points &amp; coins each completed chore earns
+              </div>
+              {TIME_ACTIONS.map(action => {
+                const currentVal = selectedProfile.chorePointsPerCategory?.[action.type] ?? POINTS_PER_CHORE;
+                return (
+                  <div key={action.type} className={styles.chorePointsRow}>
+                    <span className={styles.chorePointsLabel}>{action.emoji} {action.label}</span>
+                    <input
+                      className={styles.chorePointsInput}
+                      type="number"
+                      min="1"
+                      max="99"
+                      value={currentVal}
+                      onChange={e => {
+                        const val = Math.max(1, Math.min(99, parseInt(e.target.value, 10) || 1));
+                        const current = selectedProfile.chorePointsPerCategory ?? { morning: POINTS_PER_CHORE, afternoon: POINTS_PER_CHORE, evening: POINTS_PER_CHORE };
+                        onUpdateChorePoints(selectedChild, { ...current, [action.type]: val });
+                      }}
+                    />
+                    <span style={{ fontSize: '0.8rem', color: 'rgba(255,255,255,0.5)' }}>pts</span>
+                  </div>
+                );
+              })}
             </div>
-          ))}
+          )}
         </div>
       )}
 
       {tab === 'bonus' && selectedProfile && (
         <div className={styles.section}>
           <div className={styles.sectionTitle}>
-            Give Bonus to {selectedProfile.creatureName}
+            Give Bonus to {displayName(selectedProfile)}
           </div>
           <div style={{ fontSize: '0.9rem', color: 'rgba(255,255,255,0.6)' }}>
             Category
@@ -261,6 +343,31 @@ export function ParentPanel({
 
       {tab === 'rewards' && (
         <div className={styles.section}>
+          {onFulfillReward && (() => {
+            const pending = profiles.flatMap(p =>
+              (p.redeemedRewards || [])
+                .filter(r => !r.fulfilled)
+                .map(r => ({ profile: p, reward: r }))
+            );
+            if (pending.length === 0) return null;
+            return (
+              <>
+                <div className={styles.sectionTitle}>Pending Redemptions</div>
+                {pending.map(({ profile: p, reward: r }) => (
+                  <div key={r.id} className={styles.choreItem}>
+                    <span>{'\u{1F381}'}</span>
+                    <span className={styles.choreItemName}>{displayName(p)}: {r.rewardName}</span>
+                    <button
+                      className={styles.approveBtn}
+                      onClick={() => onFulfillReward(p.id, r.id, r.rewardName)}
+                    >
+                      Give it!
+                    </button>
+                  </div>
+                ))}
+              </>
+            );
+          })()}
           <div className={styles.sectionTitle}>
             {'\u{1F381}'} Manage Reward Presents
           </div>
@@ -317,8 +424,43 @@ export function ParentPanel({
       {tab === 'dashboard' && selectedProfile && (
         <div className={styles.section}>
           <div className={styles.sectionTitle}>
-            Stats for {selectedProfile.creatureName}
+            Stats for {displayName(selectedProfile)}
           </div>
+          {onUpdateChildName && (
+            <div className={styles.editNameRow}>
+              {editingName ? (
+                <form className={styles.addRow} onSubmit={(e) => {
+                  e.preventDefault();
+                  const trimmed = editNameValue.trim();
+                  if (trimmed.length >= 1 && trimmed.length <= 20) {
+                    onUpdateChildName(selectedChild, trimmed);
+                    setEditingName(false);
+                  }
+                }}>
+                  <input
+                    className={styles.addInput}
+                    type="text"
+                    value={editNameValue}
+                    onChange={e => setEditNameValue(e.target.value.slice(0, 20))}
+                    placeholder="Child's name..."
+                    maxLength={20}
+                    autoFocus
+                  />
+                  <button className={styles.addBtn} type="submit" disabled={!editNameValue.trim()}>Save</button>
+                  <button className={styles.cancelBtn} type="button" onClick={() => setEditingName(false)}>Cancel</button>
+                </form>
+              ) : (
+                <div className={styles.nameDisplay}>
+                  <span className={styles.nameLabel}>Child's Name:</span>
+                  <span className={styles.nameValue}>{selectedProfile.childName || <span className={styles.namePlaceholder}>Add name</span>}</span>
+                  <button className={styles.editBtn} onClick={() => { setEditNameValue(selectedProfile.childName || ''); setEditingName(true); }}>
+                    {'\u{270F}\u{FE0F}'}
+                  </button>
+                </div>
+              )}
+              <div className={styles.creatureLabel}>Creature: {selectedProfile.creatureName}</div>
+            </div>
+          )}
           <div className={styles.dashboard}>
             <div className={styles.stat}>
               <div className={styles.statLabel}>Health</div>

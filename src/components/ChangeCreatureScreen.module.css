@@ -1,0 +1,126 @@
+.screen {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  width: 100%;
+  flex: 1;
+  overflow-y: auto;
+}
+
+.title {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: #f0e68c;
+  text-align: center;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+
+.card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 8px 4px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 2px solid rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+  cursor: pointer;
+  font-family: inherit;
+  transition: border-color 0.15s;
+}
+
+.card:hover {
+  border-color: rgba(240, 230, 140, 0.4);
+}
+
+.cardActive {
+  border-color: #f0e68c;
+  background: rgba(240, 230, 140, 0.12);
+}
+
+.cardSprite {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.cardLabel {
+  font-size: 0.65rem;
+  color: rgba(255, 255, 255, 0.7);
+  text-align: center;
+  line-height: 1.2;
+}
+
+.cardActive .cardLabel {
+  color: #f0e68c;
+}
+
+.nameSection {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.nameInput {
+  width: 100%;
+  padding: 8px 12px;
+  font-size: 1rem;
+  font-family: inherit;
+  color: #fff;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 8px;
+  outline: none;
+  box-sizing: border-box;
+}
+
+.nameInput:focus {
+  border-color: #f0e68c;
+}
+
+.charCount {
+  font-size: 0.75rem;
+  color: rgba(255, 255, 255, 0.4);
+  text-align: right;
+}
+
+.actions {
+  display: flex;
+  gap: 8px;
+}
+
+.cancelBtn {
+  flex: 1;
+  padding: 10px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  font-family: inherit;
+  color: rgba(255, 255, 255, 0.6);
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.confirmBtn {
+  flex: 2;
+  padding: 10px;
+  font-size: 0.9rem;
+  font-weight: 700;
+  font-family: inherit;
+  color: #1a1a2e;
+  background: #f0e68c;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.confirmBtn:disabled {
+  opacity: 0.4;
+  cursor: default;
+}

@@ -64,7 +64,7 @@ export function AuthScreen({ onSignUp, onSignIn, onJoinFamily, onSkip }: AuthScr
   if (mode === 'choose') {
     return (
       <div className={styles.screen}>
-        <div className={styles.title}>TERRAGUCCI</div>
+        <img src="/logo_header.png" alt="HabitHatch" className="logo-header" />
         <div className={styles.subtitle}>How would you like to play?</div>
         <button className={styles.primaryBtn} onClick={() => setMode('parent')}>
           {'\u{1F468}\u{200D}\u{1F469}\u{200D}\u{1F467}'} I'm a Parent
@@ -82,7 +82,7 @@ export function AuthScreen({ onSignUp, onSignIn, onJoinFamily, onSkip }: AuthScr
   if (mode === 'child') {
     return (
       <div className={styles.screen}>
-        <div className={styles.title}>TERRAGUCCI</div>
+        <img src="/logo_header.png" alt="HabitHatch" className="logo-header" />
         <div className={styles.subtitle}>Enter your family code</div>
         <form className={styles.form} onSubmit={handleJoinSubmit}>
           <input
@@ -109,7 +109,7 @@ export function AuthScreen({ onSignUp, onSignIn, onJoinFamily, onSkip }: AuthScr
   // Parent sign up / sign in
   return (
     <div className={styles.screen}>
-      <div className={styles.title}>TERRAGUCCI</div>
+      <img src="/logo_header.png" alt="HabitHatch" className="logo-header" />
       <div className={styles.tabs}>
         <button
           className={`${styles.tab} ${!isSignIn ? styles.active : ''}`}

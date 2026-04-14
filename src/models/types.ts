@@ -1,6 +1,14 @@
 export type Mood = 'happy' | 'neutral' | 'sad' | 'distressed';
 
-export type CreatureType = 'bird' | 'turtle' | 'cat' | 'dog';
+export type CreatureType =
+  // Pack 1
+  | 'corgi' | 'husky'
+  | 'panda' | 'chick' | 'bunny'
+  | 'calico' | 'tiger' | 'monkey'
+  // Pack 2
+  | 'sloth' | 'dragon' | 'snake'
+  | 'gecko' | 'cockatoo' | 'fish'
+  | 'giraffe' | 'elephant' | 'leopard';
 
 export type TimeActionType = 'morning' | 'afternoon' | 'evening';
 
@@ -56,12 +64,21 @@ export type CreatureAction =
   | { type: 'morning' }
   | { type: 'afternoon' }
   | { type: 'evening' }
+  | { type: 'feed' }
   | { type: 'decay'; delta: number }
   | { type: 'earn'; category: TimeActionType; amount: number }
   | { type: 'load'; state: CreatureState };
 
 export type OutfitId = string;
 export type AccessoryId = string;
+export type HabitatId = string;
+
+export interface Habitat {
+  id: HabitatId;
+  name: string;
+  image: string;  // path to PNG, e.g. '/creature-habitats/02_beach.png'
+  price: number;
+}
 
 export interface Outfit {
   id: OutfitId;
@@ -116,20 +133,26 @@ export interface BonusNotification {
 
 export interface ChildProfile {
   id: string;
+  childName: string | null;
   creatureType: CreatureType;
   creatureName: string;
   health: number;
   points: CategoryPoints;
   coins: number;
-  chores: CategoryChores;
+  weekdayChores: CategoryChores;
+  weekendChores: CategoryChores;
   outfitId: OutfitId | null;
   accessoryId: AccessoryId | null;
   ownedOutfits: OutfitId[];
   ownedAccessories: AccessoryId[];
+  habitatId: HabitatId | null;
+  ownedHabitats: HabitatId[];
+  chorePointsPerCategory?: CategoryPoints;
   streak: StreakData;
   notifications: BonusNotification[];
   redeemedRewards: RedeemedReward[];
   lastPlayedDate: string;
+  fcmTokens?: string[];
 }
 
 export const MAX_COINS = 9999;
@@ -160,48 +183,52 @@ export const MAX_PROFILES = 8;
 export const PIN_SAVE_KEY = 'terragucci_pin';
 export const APP_DATA_KEY = 'terragucci_v2';
 
-export const CREATURE_SPRITES: Record<CreatureType, Record<Mood, string>> = {
-  bird: {
-    happy: '\u{1F426}',
-    neutral: '\u{1F425}',
-    sad: '\u{1FAB6}',
-    distressed: '\u{1F4A8}',
-  },
-  turtle: {
-    happy: '\u{1F422}',
-    neutral: '\u{1F40C}',
-    sad: '\u{1F614}',
-    distressed: '\u{1F4A6}',
-  },
-  cat: {
-    happy: '\u{1F63A}',
-    neutral: '\u{1F63C}',
-    sad: '\u{1F63F}',
-    distressed: '\u{1F640}',
-  },
-  dog: {
-    happy: '\u{1F436}',
-    neutral: '\u{1F415}',
-    sad: '\u{1F97A}',
-    distressed: '\u{1F4A7}',
-  },
-};
-
 export const DEFAULT_NAMES: Record<CreatureType, string> = {
-  bird: 'Tweety',
-  turtle: 'Shelly',
-  cat: 'Whiskers',
-  dog: 'Buddy',
+  corgi:    'Biscuit',
+  husky:    'Blizzard',
+  panda:    'Dumpling',
+  chick:    'Peep',
+  bunny:    'Cotton',
+  calico:   'Patches',
+  tiger:    'Stripes',
+  monkey:   'Bongo',
+  sloth:    'Mochi',
+  dragon:   'Ember',
+  snake:    'Noodle',
+  gecko:    'Zigzag',
+  cockatoo: 'Sunny',
+  fish:     'Bubbles',
+  giraffe:  'Stilts',
+  elephant: 'Peanut',
+  leopard:  'Dot',
 };
 
 export const CREATURE_LABELS: Record<CreatureType, string> = {
-  bird: 'Bird',
-  turtle: 'Turtle',
-  cat: 'Cat',
-  dog: 'Dog',
+  corgi:    'Corgi',
+  husky:    'Husky',
+  panda:    'Panda',
+  chick:    'Chick',
+  bunny:    'Bunny',
+  calico:   'Calico',
+  tiger:    'Tiger',
+  monkey:   'Monkey',
+  sloth:    'Sloth',
+  dragon:   'Dragon',
+  snake:    'Snake',
+  gecko:    'Gecko',
+  cockatoo: 'Cockatoo',
+  fish:     'Goldfish',
+  giraffe:  'Giraffe',
+  elephant: 'Elephant',
+  leopard:  'Leopard',
 };
 
-export const ALL_CREATURE_TYPES: CreatureType[] = ['bird', 'turtle', 'cat', 'dog'];
+export const ALL_CREATURE_TYPES: CreatureType[] = [
+  'corgi', 'husky', 'panda', 'chick', 'bunny',
+  'calico', 'tiger', 'monkey',
+  'sloth', 'dragon', 'snake', 'gecko', 'cockatoo', 'fish',
+  'giraffe', 'elephant', 'leopard',
+];
 
 export function getMood(state: CreatureState): Mood {
   const { health } = state;
@@ -217,8 +244,16 @@ export function clamp(value: number, min: number, max: number): number {
 
 export const MAX_POINTS = 999;
 export const POINTS_PER_CHORE = 5;
+
+export const DEFAULT_CHORE_POINTS: CategoryPoints = { morning: POINTS_PER_CHORE, afternoon: POINTS_PER_CHORE, evening: POINTS_PER_CHORE };
+
+export function getChorePoints(profile: ChildProfile, category: TimeActionType): number {
+  return profile.chorePointsPerCategory?.[category] ?? POINTS_PER_CHORE;
+}
 export const INITIAL_POINTS_PER_CATEGORY = 2;
 export const HEALTH_DECAY_RATE = 2 / 10;
+export const FEED_COIN_COST = 2;
+export const FEED_HEALTH_RESTORE = 10;
 
 export function createDefaultPoints(): CategoryPoints {
   return { morning: INITIAL_POINTS_PER_CATEGORY, afternoon: INITIAL_POINTS_PER_CATEGORY, evening: INITIAL_POINTS_PER_CATEGORY };
@@ -226,6 +261,15 @@ export function createDefaultPoints(): CategoryPoints {
 
 export function createDefaultChores(): CategoryChores {
   return { morning: [], afternoon: [], evening: [] };
+}
+
+export function isWeekend(): boolean {
+  const day = new Date().getDay();
+  return day === 0 || day === 6;
+}
+
+export function getActiveChores(profile: ChildProfile): CategoryChores {
+  return isWeekend() ? profile.weekendChores : profile.weekdayChores;
 }
 
 export const SAVE_KEY = 'terragucci_save';

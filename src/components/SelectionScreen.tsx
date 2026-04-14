@@ -1,19 +1,20 @@
 import {
   type CreatureType,
   ALL_CREATURE_TYPES,
-  CREATURE_SPRITES,
   CREATURE_LABELS,
 } from '../models/types';
+import { CreatureSprite } from './CreatureSprite';
 import styles from './SelectionScreen.module.css';
 
 interface SelectionScreenProps {
   onSelect: (type: CreatureType) => void;
+  onParentSetup?: () => void;
 }
 
-export function SelectionScreen({ onSelect }: SelectionScreenProps) {
+export function SelectionScreen({ onSelect, onParentSetup }: SelectionScreenProps) {
   return (
     <div className={styles.screen}>
-      <div className={styles.title}>TERRAGUCCI</div>
+      <img src="/logo_header.png" alt="HabitHatch" className="logo-header" />
       <div className={styles.subtitle}>Choose your creature!</div>
       <div className={styles.grid}>
         {ALL_CREATURE_TYPES.map((type) => (
@@ -22,15 +23,20 @@ export function SelectionScreen({ onSelect }: SelectionScreenProps) {
             className={styles.card}
             onClick={() => onSelect(type)}
           >
-            <span className={styles.cardSprite}>
-              {CREATURE_SPRITES[type].happy}
-            </span>
+            <div className={styles.cardSprite}>
+              <CreatureSprite creatureType={type} size={80} />
+            </div>
             <span className={styles.cardLabel}>
               {CREATURE_LABELS[type]}
             </span>
           </button>
         ))}
       </div>
+      {onParentSetup && (
+        <button className={styles.parentBtn} onClick={onParentSetup}>
+          Continue as Parent
+        </button>
+      )}
     </div>
   );
 }

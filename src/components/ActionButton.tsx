@@ -4,11 +4,12 @@ interface ActionButtonProps {
   label: string;
   emoji: string;
   cost?: number;
+  costUnit?: string;
   disabled?: boolean;
   onClick: () => void;
 }
 
-export function ActionButton({ label, emoji, cost, disabled, onClick }: ActionButtonProps) {
+export function ActionButton({ label, emoji, cost, costUnit = 'pt', disabled, onClick }: ActionButtonProps) {
   return (
     <button
       className={`${styles.button} ${disabled ? styles.disabled : ''}`}
@@ -17,7 +18,7 @@ export function ActionButton({ label, emoji, cost, disabled, onClick }: ActionBu
     >
       <span className={styles.emoji}>{emoji}</span>
       <span>{label}</span>
-      {cost !== undefined && <span className={styles.cost}>{cost}pt</span>}
+      {cost !== undefined && <span className={styles.cost}>{cost}{costUnit}</span>}
     </button>
   );
 }

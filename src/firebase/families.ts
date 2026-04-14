@@ -15,6 +15,7 @@ export interface FamilyData {
   parentUid: string;
   joinCode: string;
   rewardPresents: RewardPresent[];
+  parentPin?: string | null;
   createdAt: any;
 }
 
@@ -60,6 +61,10 @@ export async function getFamily(familyId: string): Promise<FamilyData | null> {
 
 export async function updateFamilyRewards(familyId: string, rewardPresents: RewardPresent[]): Promise<void> {
   await setDoc(doc(db, 'families', familyId), { rewardPresents }, { merge: true });
+}
+
+export async function updateFamilyPin(familyId: string, parentPin: string | null): Promise<void> {
+  await setDoc(doc(db, 'families', familyId), { parentPin }, { merge: true });
 }
 
 export async function findFamilyByParent(parentUid: string): Promise<{ familyId: string; joinCode: string } | null> {

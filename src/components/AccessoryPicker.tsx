@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { type CreatureType, type OutfitId, type AccessoryId } from '../models/types';
+import { type CreatureType, type AccessoryId } from '../models/types';
 import { ACCESSORIES } from '../models/outfits';
 import { Creature } from './Creature';
 import styles from './AccessoryPicker.module.css';
@@ -7,22 +7,20 @@ import styles from './AccessoryPicker.module.css';
 interface AccessoryPickerProps {
   creatureType: CreatureType;
   creatureName: string;
-  outfitId: OutfitId | null;
   onConfirm: (accessoryId: AccessoryId | null) => void;
 }
 
-export function AccessoryPicker({ creatureType, creatureName, outfitId, onConfirm }: AccessoryPickerProps) {
+export function AccessoryPicker({ creatureType, creatureName, onConfirm }: AccessoryPickerProps) {
   const [selected, setSelected] = useState<AccessoryId | null>(null);
 
   return (
     <div className={styles.screen}>
-      <div className={styles.title}>TERRAGUCCI</div>
+      <img src="/logo_header.png" alt="HabitHatch" className="logo-header" />
       <div className={styles.subtitle}>Add an accessory!</div>
       <Creature
         name={creatureName}
         mood="happy"
         creatureType={creatureType}
-        outfitId={outfitId}
         accessoryId={selected}
         reacting={false}
       />

@@ -6,20 +6,29 @@ interface ChorePanelProps {
   chores: CategoryChores;
   points: CategoryPoints;
   parentActive: boolean;
+  dayTypeLabel?: string;
   onAdd: (category: TimeActionType, name: string) => void;
   onRemove: (category: TimeActionType, id: string) => void;
   onToggle: (category: TimeActionType, id: string) => void;
   onResetCategory: (category: TimeActionType) => void;
   onResetAll: () => void;
+  isStale?: boolean;
+  onRefresh?: () => void;
 }
 
 export function ChorePanel({
-  chores, points, parentActive, onAdd, onRemove, onToggle, onResetCategory, onResetAll,
+  chores, points, parentActive, dayTypeLabel, onAdd, onRemove, onToggle, onResetCategory, onResetAll, isStale, onRefresh,
 }: ChorePanelProps) {
   const hasAnyCompleted = TIME_ACTIONS.some(a => chores[a.type].some(c => c.status === 'approved'));
 
   return (
     <div className={styles.panel}>
+      {dayTypeLabel && <div className={styles.dayTypeLabel}>{dayTypeLabel}</div>}
+      {isStale && onRefresh && (
+        <button className={styles.refreshBtn} onClick={onRefresh}>
+          {'\u{1F504}'} New day! Tap to refresh chores
+        </button>
+      )}
       {TIME_ACTIONS.map(action => (
         <div key={action.type} className={styles.section}>
           <div className={styles.sectionHeader}>

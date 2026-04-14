@@ -1,5 +1,6 @@
-import { type OutfitId, type AccessoryId, type RewardPresent } from '../models/types';
+import { type OutfitId, type AccessoryId, type HabitatId, type RewardPresent } from '../models/types';
 import { OUTFITS, ACCESSORIES } from '../models/outfits';
+import { HABITATS } from '../models/habitats';
 import styles from './Store.module.css';
 
 interface StoreProps {
@@ -8,16 +9,19 @@ interface StoreProps {
   accessoryId: AccessoryId | null;
   ownedOutfits: OutfitId[];
   ownedAccessories: AccessoryId[];
+  habitatId: HabitatId | null;
+  ownedHabitats: HabitatId[];
   rewardPresents: RewardPresent[];
-  onBuy: (type: 'outfit' | 'accessory', id: string, price: number) => void;
+  onBuy: (type: 'outfit' | 'accessory' | 'habitat', id: string, price: number) => void;
   onRedeemReward: (reward: RewardPresent) => void;
   onEquipOutfit: (id: OutfitId | null) => void;
   onEquipAccessory: (id: AccessoryId | null) => void;
+  onEquipHabitat: (id: HabitatId | null) => void;
 }
 
 export function Store({
-  coins, outfitId, accessoryId, ownedOutfits, ownedAccessories, rewardPresents,
-  onBuy, onRedeemReward, onEquipOutfit, onEquipAccessory,
+  coins, outfitId, accessoryId, ownedOutfits, ownedAccessories, habitatId, ownedHabitats,
+  rewardPresents, onBuy, onRedeemReward, onEquipOutfit, onEquipAccessory, onEquipHabitat,
 }: StoreProps) {
   return (
     <div className={styles.store}>
@@ -119,6 +123,44 @@ export function Store({
                     {'\u{1FA99}'} {a.price}
                   </span>
                   <button className={styles.buyBtn} disabled={!canAfford} onClick={() => onBuy('accessory', a.id, a.price)}>
+                    Buy
+                  </button>
+                </>
+              )}
+            </div>
+          );
+        })}
+      </div>
+
+      <div className={styles.sectionTitle}>{'\u{1F3DE}\u{FE0F}'} Habitats</div>
+      <div className={styles.grid}>
+        <button
+          className={`${styles.noneCard} ${habitatId === null ? styles.equipped : ''}`}
+          onClick={() => onEquipHabitat(null)}
+        >
+          <span className={styles.cardEmoji}>{'\u{1F6AB}'}</span>
+          <span className={styles.cardName}>None</span>
+        </button>
+        {HABITATS.map(h => {
+          const owned = ownedHabitats.includes(h.id);
+          const isEquipped = habitatId === h.id;
+          const canAfford = coins >= h.price;
+          return (
+            <div key={h.id} className={`${styles.card} ${isEquipped ? styles.equipped : ''}`}>
+              <img src={h.image} alt={h.name} className={styles.habitatCardImage} />
+              <span className={styles.cardName}>{h.name}</span>
+              {owned ? (
+                isEquipped ? (
+                  <button className={styles.unequipBtn} onClick={() => onEquipHabitat(null)}>Remove</button>
+                ) : (
+                  <button className={styles.equipBtn} onClick={() => onEquipHabitat(h.id)}>Equip</button>
+                )
+              ) : (
+                <>
+                  <span className={`${styles.price} ${!canAfford ? styles.cantAfford : ''}`}>
+                    {'\u{1FA99}'} {h.price}
+                  </span>
+                  <button className={styles.buyBtn} disabled={!canAfford} onClick={() => onBuy('habitat', h.id, h.price)}>
                     Buy
                   </button>
                 </>

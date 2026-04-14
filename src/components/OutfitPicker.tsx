@@ -15,13 +15,12 @@ export function OutfitPicker({ creatureType, creatureName, onConfirm }: OutfitPi
 
   return (
     <div className={styles.screen}>
-      <div className={styles.title}>TERRAGUCCI</div>
+      <img src="/logo_header.png" alt="HabitHatch" className="logo-header" />
       <div className={styles.subtitle}>Pick an outfit!</div>
       <Creature
         name={creatureName}
         mood="happy"
         creatureType={creatureType}
-        outfitId={selected}
         accessoryId={null}
         reacting={false}
       />

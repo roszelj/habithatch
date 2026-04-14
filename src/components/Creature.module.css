@@ -16,41 +16,20 @@
 }
 
 .bodyEmoji {
-  font-size: 8rem;
-  line-height: 1;
+  width: 160px;
+  height: 160px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   transition: transform 0.3s ease;
 }
 
-.moodOverlay {
-  position: absolute;
-  top: 2px;
-  right: 8px;
-  font-size: 2.8rem;
-  line-height: 1;
-  filter: drop-shadow(0 2px 6px rgba(0,0,0,0.4));
-  z-index: 3;
-}
-
 .outfitOverlay {
-  position: absolute;
-  bottom: 4px;
-  left: 50%;
-  transform: translateX(-50%);
-  font-size: 3rem;
-  line-height: 1;
-  filter: drop-shadow(0 2px 6px rgba(0,0,0,0.3));
-  z-index: 2;
+  display: none;
 }
 
 .accessoryOverlay {
-  position: absolute;
-  top: -10px;
-  left: 50%;
-  transform: translateX(-50%);
-  font-size: 3rem;
-  line-height: 1;
-  filter: drop-shadow(0 2px 6px rgba(0,0,0,0.3));
-  z-index: 4;
+  display: none;
 }
 
 .creature.bounce .bodyEmoji {
@@ -58,8 +37,7 @@
 }
 
 .creature.bounce .outfitOverlay,
-.creature.bounce .accessoryOverlay,
-.creature.bounce .moodOverlay {
+.creature.bounce .accessoryOverlay {
   animation: bounce 0.4s ease;
 }
 

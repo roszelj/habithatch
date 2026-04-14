@@ -9,14 +9,25 @@
 html, body, #root {
   height: 100%;
   width: 100%;
+  overflow-x: hidden;
 }
 
 body {
   font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
-  background: #1a1a2e;
+  background: #275b7c;
   color: #eee;
   display: flex;
   min-height: 100vh;
   overflow-x: hidden;
   overflow-y: auto;
+  padding-top: env(safe-area-inset-top);
 }
+
+.logo-header {
+  max-height: 160px;
+  width: auto;
+  max-width: 90%;
+  display: block;
+  margin: 0 auto;
+}
+

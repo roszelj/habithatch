@@ -1,6 +1,7 @@
 import { initializeApp } from 'firebase/app';
 import { getAuth } from 'firebase/auth';
 import { getFirestore, enableIndexedDbPersistence } from 'firebase/firestore';
+import { getMessaging } from 'firebase/messaging';
 
 // TODO: Replace with your Firebase project config
 // Get these from: Firebase Console → Project Settings → Your Apps → Web
@@ -13,9 +14,10 @@ const firebaseConfig = {
   appId: import.meta.env.VITE_FIREBASE_APP_ID || '',
 };
 
-const app = initializeApp(firebaseConfig);
+export const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app);
 export const db = getFirestore(app);
+export const messaging = getMessaging(app);
 
 // Enable offline persistence (IndexedDB cache)
 enableIndexedDbPersistence(db).catch((err) => {

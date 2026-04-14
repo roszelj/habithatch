@@ -6,7 +6,7 @@
   gap: 24px;
   min-height: 100vh;
   width: 100%;
-  max-width: 450px;
+  max-width: 360px;
   margin: 0 auto;
   padding: 24px;
 }
@@ -51,12 +51,21 @@
 }
 
 .cardSprite {
-  font-size: 3rem;
+  width: 70px;
+  height: 70px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .cardName {
   font-size: 1rem;
   font-weight: 600;
+}
+
+.cardCreature {
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.45);
 }
 
 .addCard {
@@ -85,4 +94,99 @@
 
 .addLabel {
   font-size: 0.9rem;
+}
+
+.parentBtn {
+  margin-top: 8px;
+  background: none;
+  border: none;
+  color: rgba(255, 255, 255, 0.35);
+  font-family: inherit;
+  font-size: 0.85rem;
+  cursor: pointer;
+  padding: 8px 16px;
+  border-radius: 8px;
+  transition: color 0.2s ease;
+}
+
+.parentBtn:hover {
+  color: rgba(255, 255, 255, 0.65);
+}
+
+.pinEntry {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  max-width: 240px;
+  margin-top: 8px;
+}
+
+.pinLabel {
+  font-size: 0.9rem;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.pinInput {
+  width: 100%;
+  padding: 10px 14px;
+  font-size: 1.2rem;
+  text-align: center;
+  letter-spacing: 4px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  border-radius: 10px;
+  color: #fff;
+  font-family: inherit;
+  outline: none;
+}
+
+.pinInput:focus {
+  border-color: #f0e68c;
+}
+
+.pinInput.pinError {
+  border-color: #ff6b6b;
+}
+
+.pinErrorMsg {
+  font-size: 0.8rem;
+  color: #ff6b6b;
+}
+
+.pinButtons {
+  display: flex;
+  gap: 10px;
+  width: 100%;
+}
+
+.pinSubmitBtn {
+  flex: 1;
+  padding: 10px;
+  background: #f0e68c;
+  color: #1a1a2e;
+  border: none;
+  border-radius: 10px;
+  font-family: inherit;
+  font-size: 0.95rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.pinSubmitBtn:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+.pinCancelBtn {
+  flex: 1;
+  padding: 10px;
+  background: rgba(255, 255, 255, 0.08);
+  color: rgba(255, 255, 255, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 10px;
+  font-family: inherit;
+  font-size: 0.95rem;
+  cursor: pointer;
 }

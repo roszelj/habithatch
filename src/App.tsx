@@ -1,14 +1,16 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import {
-  type CreatureType, type AppData, type ChildProfile,
+  type CreatureType, type ChildProfile,
   MAX_PROFILES, createDefaultPoints, createDefaultChores, createDefaultStreak,
 } from './models/types';
 import { useAuth } from './hooks/useAuth';
 import { useLocalDataProvider, useCloudDataProvider } from './hooks/useDataProvider';
+import { registerFcmToken, subscribeFcmForeground } from './firebase/messaging';
 import { createFamily, lookupJoinCode, findFamilyByParent } from './firebase/families';
-import { isFirebaseConfigured } from './firebase/config';
+import { signInAnonymous } from './firebase/auth';
 import { loadAppData, generateProfileId } from './hooks/useSaveData';
 import { SelectionScreen } from './components/SelectionScreen';
+import { PinEntry } from './components/PinEntry';
 import { NamingStep } from './components/NamingStep';
 import { ProfilePicker } from './components/ProfilePicker';
 import { AuthScreen } from './components/AuthScreen';
@@ -24,16 +26,19 @@ type AppPhase =
   | { step: 'familySetup'; joinCode: string }
   | { step: 'profiles' }
   | { step: 'select' }
+  | { step: 'parentPin' }
+  | { step: 'parentOnly' }
   | { step: 'name'; creatureType: CreatureType }
-  | { step: 'play'; profileId: string };
+  | { step: 'play'; profileId: string; asParent?: boolean };
 
 function App() {
   const { user, loading: authLoading, firebaseAvailable, signUp, signIn, signOut: doSignOut } = useAuth();
   const [familyId, setFamilyId] = useState<string | null>(() => localStorage.getItem(FAMILY_ID_KEY));
-  const [isParent, setIsParent] = useState(false);
+  const isParent = Boolean(user && !user.isAnonymous);
 
   // Choose data provider based on auth state
   const isCloudMode = Boolean(user && familyId);
+  console.log('[app] Provider mode:', isCloudMode ? 'CLOUD' : 'LOCAL', '| user:', !!user, '| familyId:', familyId);
   const localProvider = useLocalDataProvider();
   const cloudProvider = useCloudDataProvider(familyId || '__none__', isParent);
   const provider = isCloudMode ? cloudProvider : localProvider;
@@ -46,6 +51,29 @@ function App() {
     return { step: 'profiles' };
   });
 
+  // Restore parent session after Firebase auth resolves on page refresh
+  useEffect(() => {
+    if (authLoading) return;
+    if (user && !user.isAnonymous && familyId && phase.step === 'auth') {
+      setPhase({ step: 'profiles' });
+    }
+  }, [authLoading, user, familyId]);
+
+  // Register FCM token when the kid enters play mode in cloud context
+  useEffect(() => {
+    if (phase.step !== 'play' || !isCloudMode || !familyId) return;
+    registerFcmToken(familyId, phase.profileId);
+  }, [phase, familyId, isCloudMode]);
+
+  // Subscribe to foreground FCM messages in cloud mode — shows native OS banners
+  // Depends only on isCloudMode (a stable boolean) to avoid re-subscribing on every render.
+  // provider.cloudContext is a new object reference every render, which would cause
+  // the listener to be torn down and re-created constantly, risking duplicate deliveries.
+  useEffect(() => {
+    if (!isCloudMode) return;
+    return subscribeFcmForeground();
+  }, [isCloudMode]);
+
   // Update phase when cloud profiles load
   const appData = provider.appData;
 
@@ -54,7 +82,6 @@ function App() {
     const { familyId: fid, joinCode } = await createFamily(u.uid);
     localStorage.setItem(FAMILY_ID_KEY, fid);
     setFamilyId(fid);
-    setIsParent(true);
     setPhase({ step: 'familySetup', joinCode });
   }, [signUp]);
 
@@ -71,14 +98,12 @@ function App() {
     }
     if (fid) {
       setFamilyId(fid);
-      setIsParent(true);
       setPhase({ step: 'profiles' });
     } else {
       // Signed in but no family exists yet — create one
       const { familyId: newFid, joinCode } = await createFamily(u.uid);
       localStorage.setItem(FAMILY_ID_KEY, newFid);
       setFamilyId(newFid);
-      setIsParent(true);
       setPhase({ step: 'familySetup', joinCode });
     }
   }, [signIn]);
@@ -86,10 +111,10 @@ function App() {
   const handleJoinFamily = useCallback(async (code: string) => {
     const fid = await lookupJoinCode(code);
     if (!fid) throw new Error('Family not found. Check the code and try again.');
+    await signInAnonymous();
     localStorage.setItem(FAMILY_ID_KEY, fid);
     setFamilyId(fid);
-    setIsParent(false);
-    setPhase({ step: 'select' }); // child goes to creature creation
+    setPhase({ step: 'profiles' }); // child picks existing profile or adds new
   }, []);
 
   const handleSkipAuth = useCallback(() => {
@@ -105,19 +130,23 @@ function App() {
     }
   }, []);
 
-  const handleCreationComplete = useCallback((creatureType: CreatureType, name: string) => {
+  const handleCreationComplete = useCallback((creatureType: CreatureType, childName: string, creatureName: string) => {
     const profile: ChildProfile = {
       id: generateProfileId(),
+      childName,
       creatureType,
-      creatureName: name,
+      creatureName,
       health: 100,
       points: createDefaultPoints(),
       coins: 0,
-      chores: createDefaultChores(),
+      weekdayChores: createDefaultChores(),
+      weekendChores: createDefaultChores(),
       outfitId: null,
       accessoryId: null,
       ownedOutfits: [],
       ownedAccessories: [],
+      habitatId: null,
+      ownedHabitats: [],
       streak: createDefaultStreak(),
       notifications: [],
       redeemedRewards: [],
@@ -170,26 +199,74 @@ function App() {
           }}
         />
       )}
-      {phase.step === 'profiles' && (
+      {phase.step === 'profiles' && !provider.loaded && (
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '100vh', color: '#f0e68c', fontSize: '1.5rem' }}>Loading...</div>
+      )}
+      {phase.step === 'profiles' && provider.loaded && (
         <ProfilePicker
           profiles={appData.profiles}
-          canAdd={appData.profiles.length < MAX_PROFILES}
+          canAdd={true}
           onSelect={(id) => {
             localStorage.setItem(DEVICE_PROFILE_KEY, id);
             setPhase({ step: 'play', profileId: id });
           }}
           onAddNew={() => setPhase({ step: 'select' })}
+          parentPin={appData.parentPin}
+          onParentSetup={!appData.parentPin ? () => setPhase({ step: 'parentPin' }) : undefined}
+          onParentAccess={appData.parentPin && appData.profiles.length > 0 ? () => {
+            const firstId = appData.profiles[0].id;
+            localStorage.setItem(DEVICE_PROFILE_KEY, firstId);
+            setPhase({ step: 'play', profileId: firstId, asParent: true });
+          } : undefined}
         />
       )}
       {phase.step === 'select' && (
         <SelectionScreen
           onSelect={(type) => setPhase({ step: 'name', creatureType: type })}
+          onParentSetup={() => setPhase({ step: 'parentPin' })}
         />
+      )}
+      {phase.step === 'parentPin' && (
+        <PinEntry
+          mode="create"
+          onSubmit={(pin) => {
+            provider.updateAppData({ ...appData, parentPin: pin });
+            if (appData.profiles.length > 0) {
+              const firstId = appData.profiles[0].id;
+              localStorage.setItem(DEVICE_PROFILE_KEY, firstId);
+              setPhase({ step: 'play', profileId: firstId, asParent: true });
+            } else {
+              setPhase({ step: 'parentOnly' });
+            }
+            return true;
+          }}
+          onCancel={() => appData.profiles.length > 0 ? setPhase({ step: 'profiles' }) : setPhase({ step: 'select' })}
+        />
+      )}
+      {phase.step === 'parentOnly' && (
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '100vh', gap: 24, padding: 24 }}>
+          <img src="/logo_header.png" alt="HabitHatch" className="logo-header" />
+          <div style={{ color: '#f0e68c', fontSize: '1.4rem', fontWeight: 700 }}>Parent Mode</div>
+          {provider.cloudContext?.joinCode && (
+            <div style={{ color: 'rgba(255,255,255,0.6)', fontSize: '0.95rem', textAlign: 'center' }}>
+              Join code: <strong style={{ color: '#f0e68c', letterSpacing: 2 }}>{provider.cloudContext.joinCode}</strong>
+            </div>
+          )}
+          <div style={{ color: 'rgba(255,255,255,0.5)', fontSize: '0.9rem', textAlign: 'center' }}>
+            No children added yet. Add a child profile to get started.
+          </div>
+          <button
+            style={{ padding: '12px 28px', background: '#f0e68c', color: '#1a1a2e', border: 'none', borderRadius: 12, fontFamily: 'inherit', fontSize: '1rem', fontWeight: 700, cursor: 'pointer' }}
+            onClick={() => setPhase({ step: 'select' })}
+          >
+            Add Child
+          </button>
+        </div>
       )}
       {phase.step === 'name' && (
         <NamingStep
           creatureType={phase.creatureType}
-          onConfirm={(name) => handleCreationComplete(phase.creatureType, name)}
+          onConfirm={(childName, creatureName) => handleCreationComplete(phase.creatureType, childName, creatureName)}
         />
       )}
       {phase.step === 'play' && (() => {
@@ -202,9 +279,13 @@ function App() {
               profile={profile}
               appData={appData}
               onUpdateAppData={provider.updateAppData}
+              onSaveProfile={provider.saveProfile}
               onSwitchProfile={appData.profiles.length > 1 ? handleSwitchProfile : undefined}
               onAddChild={appData.profiles.length < MAX_PROFILES ? () => setPhase({ step: 'select' }) : undefined}
               onReset={appData.parentPin ? handleReset : undefined}
+              joinCode={provider.cloudContext?.joinCode}
+              onNotify={provider.notify}
+              initialView={phase.asParent ? 'parent' : undefined}
             />
             {!appData.parentPin && (
               <button className={styles.resetBtn} onClick={handleReset}>

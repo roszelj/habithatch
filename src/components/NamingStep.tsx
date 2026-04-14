@@ -1,37 +1,54 @@
 import { useState } from 'react';
 import {
   type CreatureType,
-  CREATURE_SPRITES,
   CREATURE_LABELS,
   DEFAULT_NAMES,
 } from '../models/types';
+import { CreatureSprite } from './CreatureSprite';
 import styles from './NamingStep.module.css';
 
 interface NamingStepProps {
   creatureType: CreatureType;
-  onConfirm: (name: string) => void;
+  onConfirm: (childName: string, creatureName: string) => void;
 }
 
 const MAX_NAME_LENGTH = 20;
 
 export function NamingStep({ creatureType, onConfirm }: NamingStepProps) {
-  const [name, setName] = useState(DEFAULT_NAMES[creatureType]);
+  const [childName, setChildName] = useState('');
+  const [creatureName, setCreatureName] = useState(DEFAULT_NAMES[creatureType]);
 
-  const trimmed = name.trim();
-  const isValid = trimmed.length >= 1 && trimmed.length <= MAX_NAME_LENGTH;
+  const trimmedChild = childName.trim();
+  const trimmedCreature = creatureName.trim();
+  const isValid = trimmedChild.length >= 1 && trimmedChild.length <= MAX_NAME_LENGTH
+    && trimmedCreature.length >= 1 && trimmedCreature.length <= MAX_NAME_LENGTH;
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (isValid) {
-      onConfirm(trimmed);
+      onConfirm(trimmedChild, trimmedCreature);
     }
   }
 
   return (
     <div className={styles.screen}>
-      <div className={styles.title}>TERRAGUCCI</div>
+      <img src="/logo_header.png" alt="HabitHatch" className="logo-header" />
       <div className={styles.sprite}>
-        {CREATURE_SPRITES[creatureType].happy}
+        <CreatureSprite creatureType={creatureType} size={120} />
+      </div>
+      <div className={styles.prompt}>
+        Child's Name
+      </div>
+      <div className={styles.inputRow}>
+        <input
+          className={styles.nameInput}
+          type="text"
+          value={childName}
+          onChange={(e) => setChildName(e.target.value.slice(0, MAX_NAME_LENGTH))}
+          placeholder="e.g. Emma"
+          maxLength={MAX_NAME_LENGTH}
+          autoFocus
+        />
       </div>
       <div className={styles.prompt}>
         Name your {CREATURE_LABELS[creatureType]}!
@@ -40,11 +57,10 @@ export function NamingStep({ creatureType, onConfirm }: NamingStepProps) {
         <input
           className={styles.nameInput}
           type="text"
-          value={name}
-          onChange={(e) => setName(e.target.value.slice(0, MAX_NAME_LENGTH))}
+          value={creatureName}
+          onChange={(e) => setCreatureName(e.target.value.slice(0, MAX_NAME_LENGTH))}
           placeholder="Enter a name..."
           maxLength={MAX_NAME_LENGTH}
-          autoFocus
         />
         <button
           className={styles.confirmBtn}
@@ -54,11 +70,8 @@ export function NamingStep({ creatureType, onConfirm }: NamingStepProps) {
           Go!
         </button>
       </form>
-      <div className={styles.charCount}>
-        {trimmed.length}/{MAX_NAME_LENGTH}
-      </div>
-      {trimmed.length === 0 && name.length > 0 && (
-        <div className={styles.error}>Name cannot be empty</div>
+      {trimmedChild.length === 0 && childName.length > 0 && (
+        <div className={styles.error}>Child's name cannot be empty</div>
       )}
     </div>
   );

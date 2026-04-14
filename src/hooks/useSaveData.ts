@@ -1,14 +1,26 @@
 import {
-  type AppData, type ChildProfile, type CategoryChores, type StreakData,
+  type AppData, type ChildProfile, type CategoryChores, type StreakData, type CreatureType,
+  type HabitatId,
   SAVE_KEY, APP_DATA_KEY,
-  createDefaultPoints, createDefaultChores, createDefaultStreak,
+  createDefaultPoints, createDefaultChores, createDefaultStreak, isWeekend,
 } from '../models/types';
+import { HABITATS } from '../models/habitats';
+
+const VALID_HABITAT_IDS = new Set<HabitatId>(HABITATS.map(h => h.id));
+
+const LEGACY_CREATURE_MAP: Record<string, CreatureType> = {
+  bird: 'chick', turtle: 'gecko', cat: 'calico', dog: 'corgi',
+};
+
+function migrateCreatureType(type: string): CreatureType {
+  return (LEGACY_CREATURE_MAP[type] ?? type) as CreatureType;
+}
 
 function getToday(): string {
   return new Date().toISOString().slice(0, 10);
 }
 
-function resetChoresDone(chores: CategoryChores): CategoryChores {
+export function resetChoresDone(chores: CategoryChores): CategoryChores {
   return {
     morning: chores.morning.map(c => ({ ...c, status: 'unchecked' as const })),
     afternoon: chores.afternoon.map(c => ({ ...c, status: 'unchecked' as const })),
@@ -51,13 +63,24 @@ function migrateChores(chores: any): CategoryChores {
   return chores;
 }
 
+export function migrateProfileChores(profile: any): any {
+  if (profile.weekdayChores && profile.weekendChores) return profile;
+  if (profile.chores) {
+    const { chores, ...rest } = profile;
+    return { ...rest, weekdayChores: chores, weekendChores: createDefaultChores() };
+  }
+  return { ...profile, weekdayChores: createDefaultChores(), weekendChores: createDefaultChores() };
+}
+
 function applyDailyReset(profile: ChildProfile): ChildProfile {
   const today = getToday();
   if (profile.lastPlayedDate === today) return profile;
+  const weekend = isWeekend();
   return {
     ...profile,
     streak: evaluateStreak(profile.streak, profile.lastPlayedDate, today),
-    chores: resetChoresDone(profile.chores),
+    weekdayChores: weekend ? profile.weekdayChores : resetChoresDone(profile.weekdayChores),
+    weekendChores: weekend ? resetChoresDone(profile.weekendChores) : profile.weekendChores,
     lastPlayedDate: today,
   };
 }
@@ -72,14 +95,23 @@ function migrateFromV1(): AppData | null {
 
     const profile: ChildProfile = {
       id: '1',
-      creatureType: old.creatureType,
+      childName: null,
+      creatureType: migrateCreatureType(old.creatureType),
       creatureName: old.creatureName,
       health: typeof old.health === 'number' ? old.health : 100,
       points: old.points?.morning != null ? old.points : createDefaultPoints(),
-      chores: migrateChores(old.chores),
+      coins: 0,
+      weekdayChores: migrateChores(old.chores),
+      weekendChores: createDefaultChores(),
       outfitId: old.outfitId ?? null,
       accessoryId: old.accessoryId ?? null,
+      ownedOutfits: old.outfitId ? [old.outfitId] : [],
+      ownedAccessories: old.accessoryId ? [old.accessoryId] : [],
+      habitatId: null,
+      ownedHabitats: [],
       streak: old.streak ?? createDefaultStreak(),
+      notifications: [],
+      redeemedRewards: [],
       lastPlayedDate: old.lastPlayedDate || getToday(),
     };
 
@@ -87,6 +119,7 @@ function migrateFromV1(): AppData | null {
       version: 2,
       parentPin: old.parentPin ?? null,
       profiles: [applyDailyReset(profile)],
+      rewardPresents: [],
     };
 
     // Write new format and remove old
@@ -104,7 +137,13 @@ export function loadAppData(): AppData | null {
     if (raw) {
       const data: AppData = JSON.parse(raw);
       if (data.version === 2 && Array.isArray(data.profiles)) {
-        data.profiles = data.profiles.map(applyDailyReset);
+        data.profiles = data.profiles.map(p => {
+          const migrated = migrateProfileChores({ ...p, creatureType: migrateCreatureType(p.creatureType as string) });
+          const reset = applyDailyReset(migrated);
+          const habitatId = reset.habitatId != null && VALID_HABITAT_IDS.has(reset.habitatId) ? reset.habitatId : null;
+          const ownedHabitats = (reset.ownedHabitats ?? []).filter(id => VALID_HABITAT_IDS.has(id));
+          return { ...reset, childName: reset.childName ?? null, habitatId, ownedHabitats };
+        });
         if (!data.rewardPresents) data.rewardPresents = [];
         return data;
       }
