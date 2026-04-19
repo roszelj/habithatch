@@ -1,0 +1,118 @@
+.screen {
+  display: flex;
+  flex-direction: column;
+  height: 100dvh;
+  width: 100%;
+  max-width: 430px;
+  margin: 0 auto;
+  padding: 12px 16px env(safe-area-inset-bottom, 12px);
+  overflow: hidden;
+}
+
+.backBtn {
+  flex-shrink: 0;
+  align-self: flex-start;
+  padding: 8px 16px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  font-family: inherit;
+  color: #fff;
+  background: rgba(255, 255, 255, 0.1);
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  border-radius: 10px;
+  cursor: pointer;
+  transition: background 0.2s ease;
+  margin-bottom: 12px;
+}
+
+.backBtn:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.scrollArea {
+  flex: 1;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding-bottom: 12px;
+}
+
+/* Section headers */
+.sectionHeader {
+  font-size: 1rem;
+  font-weight: 700;
+  letter-spacing: 1px;
+  color: #f0e68c;
+  padding: 10px 4px 4px;
+  margin-top: 4px;
+}
+
+.sectionHeaderParent {
+  color: #a8d8ea;
+  margin-top: 16px;
+}
+
+/* Topic rows */
+.topicRow {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  width: 100%;
+  padding: 12px 14px;
+  background: rgba(255, 255, 255, 0.07);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 12px;
+  cursor: pointer;
+  text-align: left;
+  font-family: inherit;
+  transition: background 0.15s ease;
+  gap: 3px;
+}
+
+.topicRow:hover {
+  background: rgba(255, 255, 255, 0.14);
+}
+
+.topicRowParent {
+  background: rgba(168, 216, 234, 0.06);
+  border-color: rgba(168, 216, 234, 0.18);
+}
+
+.topicRowParent:hover {
+  background: rgba(168, 216, 234, 0.14);
+}
+
+.topicTitle {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #fff;
+}
+
+.topicSummary {
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+/* Detail view */
+.detailContainer {
+  flex: 1;
+  overflow-y: auto;
+  padding-bottom: 12px;
+}
+
+.detailTitle {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: #f0e68c;
+  margin-bottom: 14px;
+  line-height: 1.3;
+}
+
+.detailBody {
+  font-size: 0.95rem;
+  line-height: 1.65;
+  color: rgba(255, 255, 255, 0.88);
+  margin: 0;
+  white-space: pre-wrap;
+}
