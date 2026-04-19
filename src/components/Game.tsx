@@ -43,6 +43,7 @@ import { ParentPanel } from './ParentPanel';
 import { ChangeCreatureScreen } from './ChangeCreatureScreen';
 import { PetFullscreen } from './PetFullscreen';
 import { FoodMenu } from './FoodMenu';
+import { HelpScreen } from './HelpScreen';
 import styles from './Game.module.css';
 
 interface GameProps {
@@ -75,6 +76,7 @@ export function Game({ profile, appData, onUpdateAppData, onSaveProfile, onSwitc
   const [ownedHabitats, setOwnedHabitats] = useState<HabitatId[]>(profile.ownedHabitats ?? []);
   const [creatureType, setCreatureType] = useState(profile.creatureType);
   const [creatureName, setCreatureName] = useState(profile.creatureName);
+  const [isPaused, setIsPaused] = useState(profile.isPaused ?? false);
   const [streak, setStreak] = useState<StreakData>(profile.streak ?? createDefaultStreak());
   const [parentPin, setParentPin] = useState<string | null>(appData.parentPin);
   const [redeemedRewards, setRedeemedRewards] = useState(profile.redeemedRewards || []);
@@ -83,7 +85,7 @@ export function Game({ profile, appData, onUpdateAppData, onSaveProfile, onSwitc
   const [speechBubble, setSpeechBubble] = useState<string | null>(null);
   const speechTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [justCompleted, setJustCompleted] = useState(false);
-  const [view, setView] = useState<'pet' | 'chores' | 'store' | 'pin' | 'parent' | 'change-creature'>(initialView ?? 'pet');
+  const [view, setView] = useState<'pet' | 'chores' | 'store' | 'pin' | 'parent' | 'change-creature' | 'help'>(initialView ?? 'pet');
   const [showFullscreen, setShowFullscreen] = useState(false);
   const [showFoodMenu, setShowFoodMenu] = useState(false);
   const prevAllDone = useRef(streak.todayEarned);
@@ -97,10 +99,11 @@ export function Game({ profile, appData, onUpdateAppData, onSaveProfile, onSwitc
     weekdayChores: weekend ? profile.weekdayChores : chores,
     weekendChores: weekend ? chores : profile.weekendChores,
     onReset: (newWeekday, newWeekend, newStreak, newDate) => {
+      setLastPlayedDate(newDate); // always advance date pointer (keeps lastPlayedDate current while paused)
+      if (isPausedRef.current) return; // skip streak/chore reset when paused
       // Re-check day type since the day just changed
       setChores(isWeekend() ? newWeekend : newWeekday);
       setStreak(newStreak);
-      setLastPlayedDate(newDate);
     },
   });
 
@@ -136,6 +139,8 @@ export function Game({ profile, appData, onUpdateAppData, onSaveProfile, onSwitc
   profileRef.current = profile;
   const onSaveProfileRef = useRef(onSaveProfile);
   onSaveProfileRef.current = onSaveProfile;
+  const isPausedRef = useRef(isPaused);
+  isPausedRef.current = isPaused;
   const redeemedRewardsRef = useRef(redeemedRewards);
   redeemedRewardsRef.current = redeemedRewards;
 
@@ -158,24 +163,39 @@ export function Game({ profile, appData, onUpdateAppData, onSaveProfile, onSwitc
     creatureType,
     creatureName,
     lastPlayedDate,
-  }), [coins, chores, weekend, outfitId, accessoryId, ownedOutfits, ownedAccessories, habitatId, ownedHabitats, streak, redeemedRewards, creatureType, creatureName, lastPlayedDate]);
+    isPaused,
+  }), [coins, chores, weekend, outfitId, accessoryId, ownedOutfits, ownedAccessories, habitatId, ownedHabitats, streak, redeemedRewards, creatureType, creatureName, lastPlayedDate, isPaused]);
+
+  // Always keep a ref to the latest buildProfile to avoid stale closures in event handlers
+  const buildProfileRef = useRef(buildProfile);
+  buildProfileRef.current = buildProfile;
 
   // Save when user-driven data changes only
   const prevSaveKey = useRef('');
   useEffect(() => {
-    const key = JSON.stringify({ coins, chores, outfitId, accessoryId, ownedOutfits, ownedAccessories, habitatId, ownedHabitats, streak, redeemedRewards, creatureType, creatureName });
+    const key = JSON.stringify({ coins, chores, outfitId, accessoryId, ownedOutfits, ownedAccessories, habitatId, ownedHabitats, streak, redeemedRewards, creatureType, creatureName, isPaused });
     if (key === prevSaveKey.current) return;
     prevSaveKey.current = key;
     onSaveProfileRef.current(buildProfile());
-  }, [buildProfile, coins, chores, outfitId, accessoryId, ownedOutfits, ownedAccessories, habitatId, ownedHabitats, streak, redeemedRewards, creatureType, creatureName]);
+  }, [buildProfile, coins, chores, outfitId, accessoryId, ownedOutfits, ownedAccessories, habitatId, ownedHabitats, streak, redeemedRewards, creatureType, creatureName, isPaused]);
 
-  // Save health on unmount only (decay is cosmetic, doesn't need real-time sync)
+  // Flush save on unmount, pagehide, and visibility-hidden.
+  // On iOS PWA, React cleanup (unmount) is NOT guaranteed when the app is backgrounded/killed —
+  // iOS suspends JS abruptly. pagehide and visibilitychange are the reliable last-chance hooks.
   useEffect(() => {
-    return () => { onSaveProfileRef.current(buildProfile()); };
+    const flush = () => { onSaveProfileRef.current(buildProfileRef.current()); };
+    const handleVisibility = () => { if (document.visibilityState === 'hidden') flush(); };
+    window.addEventListener('pagehide', flush);
+    document.addEventListener('visibilitychange', handleVisibility);
+    return () => {
+      flush(); // unmount path (e.g. profile switch)
+      window.removeEventListener('pagehide', flush);
+      document.removeEventListener('visibilitychange', handleVisibility);
+    };
   }, []);
 
   useGameLoop((delta) => {
-    dispatch({ type: 'decay', delta });
+    if (!isPausedRef.current) dispatch({ type: 'decay', delta });
   });
 
 
@@ -384,6 +404,23 @@ export function Game({ profile, appData, onUpdateAppData, onSaveProfile, onSwitc
     setView('pet');
   }, []);
 
+  const handleTogglePause = useCallback((profileId: string, paused: boolean) => {
+    if (profileId === profile.id) {
+      setIsPaused(paused);
+    } else {
+      const target = appDataRef.current.profiles.find(p => p.id === profileId);
+      if (!target) return;
+      onUpdateAppData({
+        ...appDataRef.current, parentPin,
+        profiles: appDataRef.current.profiles.map(p =>
+          p.id === profileId
+            ? { ...target, isPaused: paused, lastPlayedDate: paused ? target.lastPlayedDate : getToday() }
+            : p
+        ),
+      });
+    }
+  }, [profile.id, parentPin, onUpdateAppData]);
+
   // --- All hooks above this line --- conditional returns below ---
 
   if (view === 'change-creature') {
@@ -470,6 +507,7 @@ export function Game({ profile, appData, onUpdateAppData, onSaveProfile, onSwitc
           }}
           onFulfillReward={handleFulfillReward}
           joinCode={joinCode}
+          onTogglePause={handleTogglePause}
           onUpdateChildName={(profileId, childName) => {
             onUpdateAppData({
               ...appData, parentPin,
@@ -502,6 +540,14 @@ export function Game({ profile, appData, onUpdateAppData, onSaveProfile, onSwitc
             {'\u{2190}'} Back to Kid Mode
           </button>
         </div>
+      </div>
+    );
+  }
+
+  if (view === 'help') {
+    return (
+      <div className={styles.game}>
+        <HelpScreen onClose={() => setView('pet')} showSwitchProfile={!!onSwitchProfile} />
       </div>
     );
   }
@@ -599,6 +645,9 @@ export function Game({ profile, appData, onUpdateAppData, onSaveProfile, onSwitc
   return (
     <div className={styles.game}>
       <img src="/logo_header.png" alt="HabitHatch" className="logo-header" />
+      {isPaused && (
+        <div className={styles.pauseBanner}>💤 Resting — your pet is safe!</div>
+      )}
       <div className={`${styles.creatureStage} ${styles.creatureStageGrow}`} onClick={() => { if (state.health > 0) setShowFullscreen(true); }} style={{ cursor: state.health > 0 ? 'pointer' : 'default' }}>
         {(activeOutfit || activeAccessory) && (
           <div className={styles.stageTopRow}>
@@ -660,6 +709,9 @@ export function Game({ profile, appData, onUpdateAppData, onSaveProfile, onSwitc
         </button>
         <button className={styles.choreToggle} onClick={() => setView('pin')}>
           {'\u{1F512}'} Parent
+        </button>
+        <button className={styles.choreToggle} onClick={() => setView('help')}>
+          {'\u{2753}'} Help
         </button>
         {onSwitchProfile && (
           <button className={styles.choreToggle} onClick={onSwitchProfile}>

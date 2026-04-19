@@ -34,6 +34,7 @@ interface ParentPanelProps {
   joinCode?: string;
   onUpdateChildName?: (profileId: string, childName: string) => void;
   onUpdateChorePoints?: (profileId: string, chorePoints: CategoryPoints) => void;
+  onTogglePause?: (profileId: string, paused: boolean) => void;
 }
 
 function displayName(p: ChildProfile): string {
@@ -68,7 +69,7 @@ function collectPending(profiles: ChildProfile[]): PendingItem[] {
 export function ParentPanel({
   profiles, activeProfileId,
   onAddChore, onAddChoreAllKids, onRemoveChore, onApprove, onReject, onBonus,
-  rewardPresents, onAddReward, onRemoveReward, onFulfillReward, joinCode, onUpdateChildName, onUpdateChorePoints,
+  rewardPresents, onAddReward, onRemoveReward, onFulfillReward, joinCode, onUpdateChildName, onUpdateChorePoints, onTogglePause,
 }: ParentPanelProps) {
   const [tab, setTab] = useState<'pending' | 'manage' | 'bonus' | 'rewards' | 'dashboard'>('pending');
   const [selectedChild, setSelectedChild] = useState(activeProfileId);
@@ -268,6 +269,27 @@ export function ParentPanel({
               })}
             </div>
           )}
+          {onTogglePause && (
+            <div className={styles.pauseSection}>
+              <div className={styles.dayTypeHeader}>Pet Pause</div>
+              <div className={styles.pauseRow}>
+                <span className={styles.pauseStatus}>
+                  {selectedProfile.isPaused ? '💤 Pet is paused' : '▶️ Pet is active'}
+                </span>
+                <button
+                  className={selectedProfile.isPaused ? styles.resumeBtn : styles.pauseBtn}
+                  onClick={() => onTogglePause(selectedProfile.id, !selectedProfile.isPaused)}
+                >
+                  {selectedProfile.isPaused ? 'Resume Pet' : 'Pause Pet'}
+                </button>
+              </div>
+              <div className={styles.pauseHint}>
+                {selectedProfile.isPaused
+                  ? 'Health and streak are frozen. Tap Resume when ready.'
+                  : 'Pause to protect health and streak while your child is away.'}
+              </div>
+            </div>
+          )}
         </div>
       )}
 
@@ -460,6 +482,9 @@ export function ParentPanel({
               )}
               <div className={styles.creatureLabel}>Creature: {selectedProfile.creatureName}</div>
             </div>
+          )}
+          {selectedProfile.isPaused && (
+            <div className={styles.pausedBadge}>💤 Pet is paused — health &amp; streak are protected</div>
           )}
           <div className={styles.dashboard}>
             <div className={styles.stat}>

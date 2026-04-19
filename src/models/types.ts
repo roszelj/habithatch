@@ -153,6 +153,7 @@ export interface ChildProfile {
   redeemedRewards: RedeemedReward[];
   lastPlayedDate: string;
   fcmTokens?: string[];
+  isPaused?: boolean;
 }
 
 export const MAX_COINS = 9999;

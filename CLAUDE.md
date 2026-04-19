@@ -1,6 +1,6 @@
 # terragucci Development Guidelines
 
-Auto-generated from all feature plans. Last updated: 2026-04-13
+Auto-generated from all feature plans. Last updated: 2026-04-19
 
 ## Active Technologies
 - TypeScript 5.x (existing) + React 19, Vite 5, Firebase JS SDK v10 (012-firebase-multi-device)
@@ -40,6 +40,9 @@ Auto-generated from all feature plans. Last updated: 2026-04-13
 - N/A for trivia config (static). Coin balance changes go through existing profile save mechanism (onAwardCoins callback) (036-trivia-minigame)
 - TypeScript 5.6 + React 19, Vite 5, CSS Modules + None new — builds on existing `useDailyReset` hook and `ChorePanel` componen (037-manual-chore-refresh)
 - N/A — no new storage. Uses existing `lastPlayedDate` and chore save mechanism (037-manual-chore-refresh)
+- Firestore (cloud mode) + localStorage (local/guest mode) — `ChildProfile` document extended with `isPaused?: boolean` (038-parent-pause-mode)
+- TypeScript 5.6 + React 19 + React 19, Vite 5, CSS Modules (039-kid-help-guide)
+- N/A — static help content, no persistence (039-kid-help-guide)
 
 - TypeScript 5.x + React 19, Vite 6 (001-virtual-pet-creature)
 
@@ -59,9 +62,9 @@ npm test && npm run lint
 TypeScript 5.x: Follow standard conventions
 
 ## Recent Changes
+- 039-kid-help-guide: Added TypeScript 5.6 + React 19 + React 19, Vite 5, CSS Modules
+- 038-parent-pause-mode: Added TypeScript 5.6 + React 19, Vite 5, Firebase JS SDK v12
 - 037-manual-chore-refresh: Added TypeScript 5.6 + React 19, Vite 5, CSS Modules + None new — builds on existing `useDailyReset` hook and `ChorePanel` componen
-- 036-trivia-minigame: Added TypeScript 5.6 + React 19, Vite 5, CSS Modules + None new — builds on existing PetFullscreen component (features 031/032/033)
-- 035-weekday-weekend-chores: Added TypeScript 5.6 + React 19 + Vite 5, CSS Modules
 
 
 <!-- MANUAL ADDITIONS START -->
