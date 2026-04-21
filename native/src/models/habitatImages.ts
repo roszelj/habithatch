@@ -1,0 +1,21 @@
+// Static require() map for habitat images — dynamic requires are not supported in React Native.
+export const HABITAT_IMAGES: Record<string, any> = {
+  'water-park':        require('../../assets/habitats/01_water_park.png'),
+  'beach':             require('../../assets/habitats/02_beach.png'),
+  'cosy-bedroom':      require('../../assets/habitats/03_cosy_bedroom.png'),
+  'waterfall-forest':  require('../../assets/habitats/04_waterfall_forest.png'),
+  'candy-village':     require('../../assets/habitats/05_candy_village.png'),
+  'magic-forest-pond': require('../../assets/habitats/06_magic_forest_pond.png'),
+  'sunny-farm':        require('../../assets/habitats/07_sunny_farm.png'),
+  'snowy-cabin':       require('../../assets/habitats/08_snowy_cabin.png'),
+  'fairytale-castle':  require('../../assets/habitats/09_fairytale_castle.png'),
+  'garden-tea-party':  require('../../assets/habitats/10_garden_tea_party.png'),
+  'toy-workshop':      require('../../assets/habitats/11_toy_workshop.png'),
+  'jungle-waterfall':  require('../../assets/habitats/12_jungle_waterfall.png'),
+  'carnival':          require('../../assets/habitats/13_carnival.png'),
+  'magic-library':     require('../../assets/habitats/14_magic_library.png'),
+  'pumpkin-patch':     require('../../assets/habitats/15_pumpkin_patch.png'),
+  'fairy-pond':        require('../../assets/habitats/16_fairy_pond.png'),
+  'picnic-meadow':     require('../../assets/habitats/17_picnic_meadow.png'),
+  'candy-shop':        require('../../assets/habitats/18_candy_shop.png'),
+};
