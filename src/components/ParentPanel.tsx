@@ -35,6 +35,8 @@ interface ParentPanelProps {
   onUpdateChildName?: (profileId: string, childName: string) => void;
   onUpdateChorePoints?: (profileId: string, chorePoints: CategoryPoints) => void;
   onTogglePause?: (profileId: string, paused: boolean) => void;
+  onDeleteAccount?: (password: string) => Promise<void>;
+  onRemoveProfile?: (profileId: string) => Promise<void>;
 }
 
 function displayName(p: ChildProfile): string {
@@ -70,6 +72,7 @@ export function ParentPanel({
   profiles, activeProfileId,
   onAddChore, onAddChoreAllKids, onRemoveChore, onApprove, onReject, onBonus,
   rewardPresents, onAddReward, onRemoveReward, onFulfillReward, joinCode, onUpdateChildName, onUpdateChorePoints, onTogglePause,
+  onDeleteAccount, onRemoveProfile,
 }: ParentPanelProps) {
   const [tab, setTab] = useState<'pending' | 'manage' | 'bonus' | 'rewards' | 'dashboard'>('pending');
   const [selectedChild, setSelectedChild] = useState(activeProfileId);
@@ -84,6 +87,10 @@ export function ParentPanel({
   const [newRewardPrice, setNewRewardPrice] = useState('');
   const [editingName, setEditingName] = useState(false);
   const [editNameValue, setEditNameValue] = useState('');
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [deletePassword, setDeletePassword] = useState('');
+  const [deleteError, setDeleteError] = useState('');
+  const [deleting, setDeleting] = useState(false);
 
   const allPending = collectPending(profiles);
   const selectedProfile = profiles.find(p => p.id === selectedChild) ?? profiles[0];
@@ -288,6 +295,28 @@ export function ParentPanel({
                   ? 'Health and streak are frozen. Tap Resume when ready.'
                   : 'Pause to protect health and streak while your child is away.'}
               </div>
+            </div>
+          )}
+          {(onRemoveProfile || onDeleteAccount) && (
+            <div className={styles.dangerZone}>
+              <div className={styles.dangerZoneHeader}>Danger Zone</div>
+              {onRemoveProfile && (
+                <button
+                  className={styles.dangerBtn}
+                  onClick={() => {
+                    if (window.confirm(`Remove ${displayName(selectedProfile)}'s profile? This permanently deletes their chores, points, coins, and progress.`)) {
+                      onRemoveProfile(selectedProfile.id);
+                    }
+                  }}
+                >
+                  Remove {displayName(selectedProfile)}'s Profile
+                </button>
+              )}
+              {onDeleteAccount && (
+                <button className={styles.dangerBtn} onClick={() => { setShowDeleteModal(true); setDeletePassword(''); setDeleteError(''); }}>
+                  Delete Parent Account
+                </button>
+              )}
             </div>
           )}
         </div>
@@ -505,6 +534,52 @@ export function ParentPanel({
           <div className={styles.stat}>
             <div className={styles.statLabel}>Best Streak</div>
             <div className={styles.statValue}>{selectedProfile.streak.best} days</div>
+          </div>
+        </div>
+      )}
+      {showDeleteModal && (
+        <div className={styles.modalOverlay}>
+          <div className={styles.modalBox}>
+            <div className={styles.modalTitle}>Delete Parent Account</div>
+            <div className={styles.modalWarning}>
+              This will permanently delete your parent account, all child profiles, chores, points, coins, and history. This cannot be undone.
+            </div>
+            <div className={styles.modalLabel}>Enter your password to confirm:</div>
+            <input
+              className={styles.modalInput}
+              type="password"
+              value={deletePassword}
+              onChange={e => setDeletePassword(e.target.value)}
+              placeholder="Your password..."
+              autoFocus
+            />
+            {deleteError && <div className={styles.modalError}>{deleteError}</div>}
+            <div className={styles.modalActions}>
+              <button
+                className={styles.modalCancelBtn}
+                onClick={() => setShowDeleteModal(false)}
+                disabled={deleting}
+              >
+                Cancel
+              </button>
+              <button
+                className={styles.modalDeleteBtn}
+                disabled={deleting || !deletePassword}
+                onClick={async () => {
+                  if (!deletePassword) return;
+                  setDeleting(true);
+                  setDeleteError('');
+                  try {
+                    await onDeleteAccount!(deletePassword);
+                  } catch (err: any) {
+                    setDeleteError(err?.message ?? 'Deletion failed. Please try again.');
+                    setDeleting(false);
+                  }
+                }}
+              >
+                {deleting ? 'Deleting...' : 'Delete Everything'}
+              </button>
+            </div>
           </div>
         </div>
       )}

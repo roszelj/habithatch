@@ -6,8 +6,8 @@ import {
 import { useAuth } from './hooks/useAuth';
 import { useLocalDataProvider, useCloudDataProvider } from './hooks/useDataProvider';
 import { registerFcmToken, subscribeFcmForeground } from './firebase/messaging';
-import { createFamily, lookupJoinCode, findFamilyByParent } from './firebase/families';
-import { signInAnonymous } from './firebase/auth';
+import { createFamily, lookupJoinCode, findFamilyByParent, deleteFamily, removeProfile } from './firebase/families';
+import { signInAnonymous, reauthenticateWithPassword, deleteCurrentUser } from './firebase/auth';
 import { loadAppData, generateProfileId } from './hooks/useSaveData';
 import { SelectionScreen } from './components/SelectionScreen';
 import { PinEntry } from './components/PinEntry';
@@ -168,6 +168,29 @@ function App() {
     setPhase({ step: 'auth' });
   };
 
+  const handleDeleteAccount = useCallback(async (password: string) => {
+    await reauthenticateWithPassword(password);
+    if (familyId) {
+      const joinCode = provider.cloudContext?.joinCode ?? '';
+      await deleteFamily(familyId, joinCode);
+    }
+    await deleteCurrentUser();
+    provider.clearAll();
+    localStorage.removeItem(FAMILY_ID_KEY);
+    localStorage.removeItem(DEVICE_PROFILE_KEY);
+    setFamilyId(null);
+    setPhase({ step: 'auth' });
+  }, [familyId, provider]);
+
+  const handleRemoveProfile = useCallback(async (profileId: string) => {
+    if (familyId) await removeProfile(familyId, profileId);
+    const remaining = appData.profiles.filter(p => p.id !== profileId);
+    provider.updateAppData({ ...appData, profiles: remaining });
+    if (remaining.length === 0) {
+      setPhase({ step: 'select' });
+    }
+  }, [familyId, appData, provider]);
+
   const handleSwitchProfile = useCallback(() => {
     if (appData.profiles.length <= 1) return;
     setPhase({ step: 'profiles' });
@@ -283,6 +306,8 @@ function App() {
               onSwitchProfile={appData.profiles.length > 1 ? handleSwitchProfile : undefined}
               onAddChild={appData.profiles.length < MAX_PROFILES ? () => setPhase({ step: 'select' }) : undefined}
               onReset={appData.parentPin ? handleReset : undefined}
+              onDeleteAccount={isParent ? handleDeleteAccount : undefined}
+              onRemoveProfile={isCloudMode ? handleRemoveProfile : undefined}
               joinCode={provider.cloudContext?.joinCode}
               onNotify={provider.notify}
               initialView={phase.asParent ? 'parent' : undefined}

@@ -54,12 +54,14 @@ interface GameProps {
   onSwitchProfile?: () => void;
   onAddChild?: () => void;
   onReset?: () => void;
+  onDeleteAccount?: (password: string) => Promise<void>;
+  onRemoveProfile?: (profileId: string) => Promise<void>;
   joinCode?: string;
   onNotify?: (profileId: string, title: string, body: string) => void;
   initialView?: 'parent';
 }
 
-export function Game({ profile, appData, onUpdateAppData, onSaveProfile, onSwitchProfile, onAddChild, onReset, joinCode, onNotify, initialView }: GameProps) {
+export function Game({ profile, appData, onUpdateAppData, onSaveProfile, onSwitchProfile, onAddChild, onReset, onDeleteAccount, onRemoveProfile, joinCode, onNotify, initialView }: GameProps) {
   const { state, mood, dispatch } = useCreature(
     profile.creatureName, profile.creatureType, profile.health, profile.points
   );
@@ -508,6 +510,8 @@ export function Game({ profile, appData, onUpdateAppData, onSaveProfile, onSwitc
           onFulfillReward={handleFulfillReward}
           joinCode={joinCode}
           onTogglePause={handleTogglePause}
+          onDeleteAccount={onDeleteAccount}
+          onRemoveProfile={onRemoveProfile}
           onUpdateChildName={(profileId, childName) => {
             onUpdateAppData({
               ...appData, parentPin,
