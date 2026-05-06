@@ -26,7 +26,7 @@ export function Store({
 }: StoreProps) {
   return (
     <ScrollView contentContainerStyle={styles.store}>
-      <Text style={styles.coinDisplay}>{'\u{1FA99}'} {coins} coins</Text>
+      <Text style={styles.coinDisplay}>{'\u{1F4B0}'} {coins} coins</Text>
 
       {rewardPresents.length > 0 && (
         <>
@@ -39,7 +39,7 @@ export function Store({
                   <Text style={styles.cardEmoji}>{'\u{1F381}'}</Text>
                   <Text style={styles.cardName}>{r.name}</Text>
                   <Text style={[styles.price, !canAfford && styles.cantAfford]}>
-                    {'\u{1FA99}'} {r.price}
+                    {'\u{1F4B0}'} {r.price}
                   </Text>
                   <TouchableOpacity
                     style={[styles.redeemBtn, !canAfford && styles.btnDisabled]}
@@ -85,7 +85,7 @@ export function Store({
               ) : (
                 <>
                   <Text style={[styles.price, !canAfford && styles.cantAfford]}>
-                    {'\u{1FA99}'} {o.price}
+                    {'\u{1F4B0}'} {o.price}
                   </Text>
                   <TouchableOpacity
                     style={[styles.buyBtn, !canAfford && styles.btnDisabled]}
@@ -131,7 +131,7 @@ export function Store({
               ) : (
                 <>
                   <Text style={[styles.price, !canAfford && styles.cantAfford]}>
-                    {'\u{1FA99}'} {a.price}
+                    {'\u{1F4B0}'} {a.price}
                   </Text>
                   <TouchableOpacity
                     style={[styles.buyBtn, !canAfford && styles.btnDisabled]}
@@ -180,7 +180,7 @@ export function Store({
               ) : (
                 <>
                   <Text style={[styles.price, !canAfford && styles.cantAfford]}>
-                    {'\u{1FA99}'} {h.price}
+                    {'\u{1F4B0}'} {h.price}
                   </Text>
                   <TouchableOpacity
                     style={[styles.buyBtn, !canAfford && styles.btnDisabled]}

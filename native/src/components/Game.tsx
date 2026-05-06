@@ -46,6 +46,7 @@ import { ChangeCreatureScreen } from './ChangeCreatureScreen';
 import { PetFullscreen } from './PetFullscreen';
 import { FoodMenu } from './FoodMenu';
 import { HelpScreen } from './HelpScreen';
+import { TimedChoreSection } from './TimedChoreSection';
 
 interface GameProps {
   profile: ChildProfile;
@@ -55,12 +56,15 @@ interface GameProps {
   onSwitchProfile?: () => void;
   onAddChild?: () => void;
   onReset?: () => void;
+  onLogout?: () => void;
+  onDeleteAccount?: (email: string, password: string) => Promise<void>;
+  onRemoveProfile?: (profileId: string) => Promise<void>;
   joinCode?: string;
   onNotify?: (profileId: string, title: string, body: string) => void;
   initialView?: 'parent';
 }
 
-export function Game({ profile, appData, onUpdateAppData, onSaveProfile, onSwitchProfile, onAddChild, onReset, joinCode, onNotify, initialView }: GameProps) {
+export function Game({ profile, appData, onUpdateAppData, onSaveProfile, onSwitchProfile, onAddChild, onReset, onLogout, onDeleteAccount, onRemoveProfile, joinCode, onNotify, initialView }: GameProps) {
   const { state, mood, dispatch } = useCreature(
     profile.creatureName, profile.creatureType, profile.health, profile.points
   );
@@ -188,6 +192,39 @@ export function Game({ profile, appData, onUpdateAppData, onSaveProfile, onSwitc
       subscription.remove();
     };
   }, []);
+
+  // Sync local state when profile prop changes externally (e.g. parent awards bonus on another device)
+  const lastSyncedProfile = useRef(profile);
+  useEffect(() => {
+    const prev = lastSyncedProfile.current;
+    if (prev === profile) return;
+    lastSyncedProfile.current = profile;
+
+    if (profile.coins !== prev.coins) setCoins(profile.coins ?? 0);
+    if (profile.outfitId !== prev.outfitId) setOutfitId(profile.outfitId);
+    if (profile.accessoryId !== prev.accessoryId) setAccessoryId(profile.accessoryId);
+    if (profile.ownedOutfits !== prev.ownedOutfits) setOwnedOutfits(profile.ownedOutfits ?? []);
+    if (profile.ownedAccessories !== prev.ownedAccessories) setOwnedAccessories(profile.ownedAccessories ?? []);
+    if (profile.habitatId !== prev.habitatId) setHabitatId(profile.habitatId ?? null);
+    if (profile.ownedHabitats !== prev.ownedHabitats) setOwnedHabitats(profile.ownedHabitats ?? []);
+    if (profile.isPaused !== prev.isPaused) setIsPaused(profile.isPaused ?? false);
+    if (profile.creatureType !== prev.creatureType) setCreatureType(profile.creatureType);
+    if (profile.creatureName !== prev.creatureName) setCreatureName(profile.creatureName);
+    if (profile.redeemedRewards !== prev.redeemedRewards) setRedeemedRewards(profile.redeemedRewards || []);
+
+    // Sync health/points via reducer load
+    const pointsChanged = JSON.stringify(profile.points) !== JSON.stringify(prev.points);
+    if (profile.health !== prev.health || pointsChanged) {
+      dispatch({ type: 'load', state: { name: profile.creatureName, creatureType: profile.creatureType, health: profile.health, points: profile.points } });
+    }
+
+    // Sync chores
+    const newChores = weekend ? profile.weekendChores : profile.weekdayChores;
+    const prevChores = weekend ? prev.weekendChores : prev.weekdayChores;
+    if (JSON.stringify(newChores) !== JSON.stringify(prevChores)) {
+      setChores(newChores);
+    }
+  }, [profile, weekend, dispatch, setChores]);
 
   useGameLoop((delta) => {
     if (!isPausedRef.current) dispatch({ type: 'decay', delta });
@@ -435,13 +472,14 @@ export function Game({ profile, appData, onUpdateAppData, onSaveProfile, onSwitc
       weekdayChores: weekend ? profile.weekdayChores : chores,
       weekendChores: weekend ? chores : profile.weekendChores,
       outfitId, accessoryId, ownedOutfits, ownedAccessories, habitatId, ownedHabitats, streak,
+      redeemedRewards,
       creatureType, creatureName,
       lastPlayedDate: new Date().toISOString().slice(0, 10),
     };
     const liveProfiles = appData.profiles.map(p => p.id === profile.id ? currentProfile : p);
 
     return (
-      <View style={styles.game}>
+      <View style={[styles.game, styles.overlay]}>
         <Text style={styles.title}>PARENT MODE</Text>
         <ParentPanel
           profiles={liveProfiles}
@@ -491,26 +529,16 @@ export function Game({ profile, appData, onUpdateAppData, onSaveProfile, onSwitc
           onUpdateChorePoints={(profileId, chorePoints) => {
             onUpdateAppData({ ...appData, parentPin, profiles: appData.profiles.map(p => p.id === profileId ? { ...p, chorePointsPerCategory: chorePoints } : p) });
           }}
+          onAddChild={onAddChild}
+          onReset={onReset}
+          onLogout={onLogout}
+          onDeleteAccount={onDeleteAccount}
+          onRemoveProfile={onRemoveProfile}
+          onBack={() => setView('pet')}
         />
-        <View style={styles.parentToolbar}>
-          {(onAddChild || onReset) && (
-            <View style={styles.parentToolbarSecondary}>
-              {onAddChild && (
-                <TouchableOpacity style={styles.parentSecondaryBtn} onPress={onAddChild}>
-                  <Text style={styles.parentSecondaryBtnText}>{'\u{2795}'} Add Child</Text>
-                </TouchableOpacity>
-              )}
-              {onReset && (
-                <TouchableOpacity style={styles.parentDangerBtn} onPress={onReset}>
-                  <Text style={styles.parentDangerBtnText}>{'\u{1F5D1}\u{FE0F}'} Reset Game</Text>
-                </TouchableOpacity>
-              )}
-            </View>
-          )}
-          <TouchableOpacity style={styles.parentBackBtn} onPress={() => setView('pet')}>
-            <Text style={styles.parentBackBtnText}>{'\u{2190}'} Back to Kid Mode</Text>
-          </TouchableOpacity>
-        </View>
+        <TouchableOpacity style={styles.parentBackBtn} onPress={() => setView('pet')}>
+          <Text style={styles.parentBackBtnText}>{'\u{2190}'} Back to Kid Mode</Text>
+        </TouchableOpacity>
       </View>
     );
   }
@@ -525,7 +553,7 @@ export function Game({ profile, appData, onUpdateAppData, onSaveProfile, onSwitc
 
   if (view === 'chores') {
     return (
-      <View style={styles.game}>
+      <View style={[styles.game, styles.overlay]}>
         <Text style={styles.title}>CHORES</Text>
         <ChorePanel
           chores={chores}
@@ -553,7 +581,7 @@ export function Game({ profile, appData, onUpdateAppData, onSaveProfile, onSwitc
     const storeAccessory = getAccessoryById(accessoryId);
     const storeHabitatImg = habitatId ? HABITAT_IMAGES[habitatId] : null;
     return (
-      <View style={styles.game}>
+      <View style={[styles.game, styles.overlay]}>
         <Text style={styles.title}>STORE</Text>
         <View style={styles.creatureStage}>
           {(storeOutfit || storeAccessory) && (
@@ -614,85 +642,94 @@ export function Game({ profile, appData, onUpdateAppData, onSaveProfile, onSwitc
   const activeOutfit = getOutfitById(outfitId);
   const activeAccessory = getAccessoryById(accessoryId);
 
+  const tabItems: Array<{ icon: string; label: string; onPress: () => void }> = [
+    { icon: '\u{1F4CB}', label: 'Chores', onPress: () => setView('chores') },
+    { icon: '\u{1F6CD}\u{FE0F}', label: 'Store', onPress: () => setView('store') },
+    { icon: '\u{1F422}', label: 'Change', onPress: () => setView('change-creature') },
+    { icon: '\u{1F512}', label: 'Parent', onPress: () => setView('pin') },
+    { icon: '\u{2753}', label: 'Help', onPress: () => setView('help') },
+  ];
+  if (onSwitchProfile) {
+    tabItems.push({ icon: '\u{1F465}', label: 'Switch', onPress: onSwitchProfile });
+  }
+
   return (
     <View style={styles.game}>
-      <Image source={require('../../assets/logo_header.png')} style={styles.logo} resizeMode="contain" />
-      {isPaused && (
-        <View style={styles.pauseBanner}>
-          <Text style={styles.pauseBannerText}>💤 Resting — your pet is safe!</Text>
+      <ScrollView style={styles.gameContent} contentContainerStyle={styles.gameContentInner} showsVerticalScrollIndicator={false}>
+        <Image source={require('../../assets/logo_header.png')} style={styles.logo} resizeMode="contain" />
+        {isPaused && (
+          <View style={styles.pauseBanner}>
+            <Text style={styles.pauseBannerText}>💤 Resting — your pet is safe!</Text>
+          </View>
+        )}
+        <TouchableOpacity
+          style={styles.creatureStage}
+          onPress={() => { if (state.health > 0) setShowFullscreen(true); }}
+          activeOpacity={state.health > 0 ? 0.8 : 1}
+        >
+          {(activeOutfit || activeAccessory) && (
+            <View style={styles.stageTopRow}>
+              {activeOutfit && <Text style={styles.stageEquipEmoji}>{activeOutfit.emoji}</Text>}
+              {activeAccessory && <Text style={styles.stageEquipEmoji}>{activeAccessory.emoji}</Text>}
+            </View>
+          )}
+          {activeHabitat && activeHabitatImg && (
+            <Image source={activeHabitatImg} style={styles.habitatBackground} resizeMode="cover" />
+          )}
+          {speechBubble && (
+            <View style={styles.speechBubble}>
+              <Text style={styles.speechBubbleText}>{speechBubble}</Text>
+            </View>
+          )}
+          <Creature
+            name={creatureName}
+            mood={mood}
+            creatureType={creatureType}
+            accessoryId={accessoryId}
+            reacting={reacting}
+          />
+        </TouchableOpacity>
+        <Text style={styles.stageMood}>{MOOD_FACES[mood]}</Text>
+        <StreakDisplay streak={streak} justCompleted={justCompleted} />
+        {message ? <Text style={styles.message}>{message}</Text> : null}
+        <View style={styles.pointsRow}>
+          {TIME_ACTIONS.map(a => (
+            <View key={a.type} style={styles.pointBadge}>
+              <Text style={styles.pointBadgeText}>{a.emoji} {state.points[a.type]}</Text>
+            </View>
+          ))}
+          <View style={styles.pointBadge}>
+            <Text style={styles.totalPoints}>{'\u{1F4B0}'} {coins}</Text>
+          </View>
         </View>
-      )}
-      <TouchableOpacity
-        style={styles.creatureStage}
-        onPress={() => { if (state.health > 0) setShowFullscreen(true); }}
-        activeOpacity={state.health > 0 ? 0.8 : 1}
-      >
-        {(activeOutfit || activeAccessory) && (
-          <View style={styles.stageTopRow}>
-            {activeOutfit && <Text style={styles.stageEquipEmoji}>{activeOutfit.emoji}</Text>}
-            {activeAccessory && <Text style={styles.stageEquipEmoji}>{activeAccessory.emoji}</Text>}
-          </View>
-        )}
-        {activeHabitat && activeHabitatImg && (
-          <Image source={activeHabitatImg} style={styles.habitatBackground} resizeMode="cover" />
-        )}
-        {speechBubble && (
-          <View style={styles.speechBubble}>
-            <Text style={styles.speechBubbleText}>{speechBubble}</Text>
-          </View>
-        )}
-        <Creature
-          name={creatureName}
-          mood={mood}
-          creatureType={creatureType}
-          accessoryId={accessoryId}
-          reacting={reacting}
-        />
-      </TouchableOpacity>
-      <Text style={styles.stageMood}>{MOOD_FACES[mood]}</Text>
-      <StreakDisplay streak={streak} justCompleted={justCompleted} />
-      {message ? <Text style={styles.message}>{message}</Text> : null}
-      <View style={styles.pointsRow}>
-        {TIME_ACTIONS.map(a => (
-          <View key={a.type} style={styles.pointBadge}>
-            <Text style={styles.pointBadgeText}>{a.emoji} {state.points[a.type]}</Text>
-          </View>
-        ))}
-        <View style={styles.pointBadge}>
-          <Text style={styles.totalPoints}>{'\u{1FA99}'} {coins}</Text>
+        <View style={styles.stats}>
+          <StatBar label={'\u{2764}\u{FE0F}'} value={state.health} color="#e74c3c" />
         </View>
-      </View>
-      <View style={styles.stats}>
-        <StatBar label={'\u{2764}\u{FE0F}'} value={state.health} color="#e74c3c" />
-      </View>
-      <View style={styles.actions}>
-        <ActionButton
-          emoji={'\u{1F372}'}
-          label="Feed"
-          cost={FEED_COIN_COST}
-          costUnit={'\u{1FA99}'}
-          disabled={coins < FEED_COIN_COST}
-          onClick={() => setShowFoodMenu(true)}
+        <View style={styles.actions}>
+          <ActionButton
+            emoji={'\u{1F372}'}
+            label="Feed"
+            cost={FEED_COIN_COST}
+            costUnit={'\u{1F4B0}'}
+            disabled={coins < FEED_COIN_COST}
+            onClick={() => setShowFoodMenu(true)}
+          />
+        </View>
+        <TimedChoreSection
+          chores={chores}
+          parentActive={parentActive}
+          onToggle={(category, id) => checkOffChore(category, id, parentActive)}
         />
-      </View>
-      <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.toolbarScroll} contentContainerStyle={styles.toolbar}>
-        {([
-          { icon: '\u{1F4CB}', label: 'Chores', view: 'chores' },
-          { icon: '\u{1F6CD}\u{FE0F}', label: 'Store', view: 'store' },
-          { icon: '\u{1F422}', label: 'Change', view: 'change-creature' },
-          { icon: '\u{1F512}', label: 'Parent', view: 'pin' },
-          { icon: '\u{2753}', label: 'Help', view: 'help' },
-        ] as const).map(item => (
-          <TouchableOpacity key={item.view} style={styles.toolBtn} onPress={() => setView(item.view)}>
-            <Text style={styles.toolBtnText}>{item.icon} {item.label}</Text>
-          </TouchableOpacity>
-        ))}
-        {onSwitchProfile && (
-          <TouchableOpacity style={styles.toolBtn} onPress={onSwitchProfile}>
-            <Text style={styles.toolBtnText}>{'\u{1F465}'} Switch</Text>
-          </TouchableOpacity>
-        )}
       </ScrollView>
+
+      <View style={styles.tabBar}>
+        {tabItems.map(item => (
+          <TouchableOpacity key={item.label} style={styles.tabItem} onPress={item.onPress}>
+            <Text style={styles.tabIcon}>{item.icon}</Text>
+            <Text style={styles.tabLabel}>{item.label}</Text>
+          </TouchableOpacity>
+        ))}
+      </View>
 
       {showFullscreen && (
         <PetFullscreen
@@ -717,7 +754,22 @@ export function Game({ profile, appData, onUpdateAppData, onSaveProfile, onSwitc
 }
 
 const styles = StyleSheet.create({
-  game: { flex: 1, alignItems: 'center', padding: 16, gap: 10 },
+  game: { flex: 1 },
+  gameContent: { flex: 1 },
+  gameContentInner: { alignItems: 'center', padding: 16, gap: 10 },
+  tabBar: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    alignItems: 'center',
+    height: 56,
+    borderTopWidth: StyleSheet.hairlineWidth,
+    borderTopColor: 'rgba(255,255,255,0.15)',
+    backgroundColor: 'rgba(0,0,0,0.25)',
+  },
+  tabItem: { alignItems: 'center', justifyContent: 'center', flex: 1, paddingVertical: 4 },
+  tabIcon: { fontSize: 20 },
+  tabLabel: { fontSize: 10, fontWeight: '500', color: 'rgba(255,255,255,0.4)', marginTop: 2 },
+  overlay: { paddingHorizontal: 16 },
   logo: { width: 180, height: 56 },
   title: { fontSize: 18, fontWeight: '700', color: '#f0e68c', letterSpacing: 2 },
   pauseBanner: {
@@ -783,17 +835,6 @@ const styles = StyleSheet.create({
   totalPoints: { fontSize: 14, fontWeight: '700', color: '#f0e68c' },
   stats: { width: '100%' },
   actions: { width: '100%' },
-  toolbarScroll: { flexGrow: 0, width: '100%' },
-  toolbar: { gap: 6, paddingVertical: 4 },
-  toolBtn: {
-    paddingVertical: 8,
-    paddingHorizontal: 14,
-    backgroundColor: 'rgba(255,255,255,0.08)',
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.15)',
-    borderRadius: 8,
-  },
-  toolBtnText: { fontSize: 13, fontWeight: '600', color: '#fff' },
   navBtn: {
     paddingVertical: 10,
     paddingHorizontal: 20,
@@ -804,31 +845,14 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
   },
   navBtnText: { fontSize: 14, color: 'rgba(255,255,255,0.7)', fontWeight: '600' },
-  parentToolbar: { width: '100%', gap: 8 },
-  parentToolbarSecondary: { flexDirection: 'row', gap: 8, justifyContent: 'center' },
-  parentSecondaryBtn: {
-    paddingVertical: 8,
-    paddingHorizontal: 16,
-    backgroundColor: 'rgba(255,255,255,0.08)',
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.15)',
-    borderRadius: 8,
-  },
-  parentSecondaryBtnText: { fontSize: 13, color: 'rgba(255,255,255,0.6)' },
-  parentDangerBtn: {
-    paddingVertical: 8,
-    paddingHorizontal: 16,
-    backgroundColor: 'rgba(231,76,60,0.1)',
-    borderWidth: 1,
-    borderColor: 'rgba(231,76,60,0.3)',
-    borderRadius: 8,
-  },
-  parentDangerBtnText: { fontSize: 13, color: '#e74c3c' },
   parentBackBtn: {
     paddingVertical: 10,
     backgroundColor: '#f0e68c',
     borderRadius: 10,
     alignItems: 'center',
+    marginHorizontal: 16,
+    marginTop: 8,
+    marginBottom: 8,
   },
   parentBackBtnText: { fontSize: 15, fontWeight: '700', color: '#1a1a2e' },
 });

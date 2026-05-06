@@ -26,19 +26,19 @@ export const KID_HELP_TOPICS: HelpTopic[] = [
     summary: 'Spend coins to feed your creature yummy food.',
     detail:
       'Tap the Feed button to open the food menu. Pick a food to feed your pet — it will show a fun message and feel better right away! ' +
-      'Feeding costs coins 🪙. If you don\'t have enough coins, the Feed button will be greyed out. ' +
+      'Feeding costs coins 💰. If you don\'t have enough coins, the Feed button will be greyed out. ' +
       'Earn coins by completing your chores. ' +
       'Your pet gets hungry over time, so try to feed it every day to keep it healthy and happy!',
     audience: 'kid',
   },
   {
     id: 'kid-points-coins',
-    title: '🪙 Points & Coins',
+    title: '💰 Points & Coins',
     summary: 'Earn points and coins by doing your chores.',
     detail:
       'When you check off a chore, you earn points AND coins at the same time! ' +
       'Points are shown at the top of the screen. There are different kinds: morning ☀️, afternoon 🌤️, and evening 🌙 points — each type matches when you did your chore. ' +
-      'Coins 🪙 are shown in yellow. You can spend them in the Store to buy outfits, accessories, and habitats for your pet. ' +
+      'Coins 💰 are shown in yellow. You can spend them in the Store to buy outfits, accessories, and habitats for your pet. ' +
       'You can also spend coins to redeem special Reward Presents that your parent sets up!',
     audience: 'kid',
   },

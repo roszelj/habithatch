@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, Image, StyleSheet, ScrollView } from 'react-native';
+import { sendPasswordReset } from '../firebase/auth';
 
 interface AuthScreenProps {
   onSignUp: (email: string, password: string) => Promise<void>;
@@ -16,6 +17,10 @@ export function AuthScreen({ onSignUp, onSignIn, onJoinFamily, onSkip }: AuthScr
   const [joinCode, setJoinCode] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [showForgotPassword, setShowForgotPassword] = useState(false);
+  const [resetEmail, setResetEmail] = useState('');
+  const [resetSent, setResetSent] = useState(false);
+  const [resetLoading, setResetLoading] = useState(false);
 
   async function handleParentSubmit() {
     if (!email || !password) return;
@@ -33,6 +38,23 @@ export function AuthScreen({ onSignUp, onSignIn, onJoinFamily, onSkip }: AuthScr
       else setError(err.message || 'Something went wrong');
     }
     setLoading(false);
+  }
+
+  async function handleForgotPassword() {
+    if (!resetEmail) return;
+    setResetLoading(true);
+    try {
+      await sendPasswordReset(resetEmail);
+      setResetSent(true);
+    } catch (err: any) {
+      const code = err?.code || '';
+      if (code === 'auth/user-not-found' || code === 'auth/invalid-email') {
+        setError('No account found with that email address.');
+      } else {
+        setError(err.message || 'Could not send reset email. Try again.');
+      }
+    }
+    setResetLoading(false);
   }
 
   async function handleJoinSubmit() {
@@ -96,42 +118,85 @@ export function AuthScreen({ onSignUp, onSignIn, onJoinFamily, onSkip }: AuthScr
     <ScrollView contentContainerStyle={styles.screen} keyboardShouldPersistTaps="handled">
       <Image source={require('../../assets/logo_header.png')} style={styles.logo} resizeMode="contain" />
       <View style={styles.tabs}>
-        <TouchableOpacity style={[styles.tab, !isSignIn && styles.tabActive]} onPress={() => { setIsSignIn(false); setError(''); }}>
+        <TouchableOpacity style={[styles.tab, !isSignIn && styles.tabActive]} onPress={() => { setIsSignIn(false); setError(''); setShowForgotPassword(false); setResetSent(false); }}>
           <Text style={[styles.tabText, !isSignIn && styles.tabTextActive]}>Sign Up</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={[styles.tab, isSignIn && styles.tabActive]} onPress={() => { setIsSignIn(true); setError(''); }}>
+        <TouchableOpacity style={[styles.tab, isSignIn && styles.tabActive]} onPress={() => { setIsSignIn(true); setError(''); setShowForgotPassword(false); setResetSent(false); }}>
           <Text style={[styles.tabText, isSignIn && styles.tabTextActive]}>Sign In</Text>
         </TouchableOpacity>
       </View>
-      <TextInput
-        style={styles.input}
-        value={email}
-        onChangeText={setEmail}
-        placeholder="Email"
-        placeholderTextColor="rgba(255,255,255,0.3)"
-        keyboardType="email-address"
-        autoCapitalize="none"
-        autoFocus
-      />
-      <TextInput
-        style={styles.input}
-        value={password}
-        onChangeText={setPassword}
-        placeholder="Password (6+ characters)"
-        placeholderTextColor="rgba(255,255,255,0.3)"
-        secureTextEntry
-        onSubmitEditing={handleParentSubmit}
-      />
-      {error ? <Text style={styles.error}>{error}</Text> : null}
-      <TouchableOpacity
-        style={[styles.primaryBtn, (!email || !password || loading) && styles.btnDisabled]}
-        onPress={handleParentSubmit}
-        disabled={!email || !password || loading}
-      >
-        <Text style={styles.primaryBtnText}>
-          {loading ? 'Please wait...' : isSignIn ? 'Sign In' : 'Create Family Account'}
-        </Text>
-      </TouchableOpacity>
+
+      {showForgotPassword ? (
+        <>
+          <Text style={styles.subtitle}>Enter your email to receive a reset link.</Text>
+          {resetSent ? (
+            <Text style={styles.successText}>Check your email for a password reset link.</Text>
+          ) : (
+            <>
+              <TextInput
+                style={styles.input}
+                value={resetEmail}
+                onChangeText={setResetEmail}
+                placeholder="Email"
+                placeholderTextColor="rgba(255,255,255,0.3)"
+                keyboardType="email-address"
+                autoCapitalize="none"
+                autoFocus
+                onSubmitEditing={handleForgotPassword}
+              />
+              {error ? <Text style={styles.error}>{error}</Text> : null}
+              <TouchableOpacity
+                style={[styles.primaryBtn, (!resetEmail || resetLoading) && styles.btnDisabled]}
+                onPress={handleForgotPassword}
+                disabled={!resetEmail || resetLoading}
+              >
+                <Text style={styles.primaryBtnText}>{resetLoading ? 'Sending...' : 'Send Reset Email'}</Text>
+              </TouchableOpacity>
+            </>
+          )}
+          <TouchableOpacity style={styles.skipBtn} onPress={() => { setShowForgotPassword(false); setResetSent(false); setError(''); }}>
+            <Text style={styles.skipBtnText}>← Back to Sign In</Text>
+          </TouchableOpacity>
+        </>
+      ) : (
+        <>
+          <TextInput
+            style={styles.input}
+            value={email}
+            onChangeText={setEmail}
+            placeholder="Email"
+            placeholderTextColor="rgba(255,255,255,0.3)"
+            keyboardType="email-address"
+            autoCapitalize="none"
+            autoFocus
+          />
+          <TextInput
+            style={styles.input}
+            value={password}
+            onChangeText={setPassword}
+            placeholder="Password (6+ characters)"
+            placeholderTextColor="rgba(255,255,255,0.3)"
+            secureTextEntry
+            onSubmitEditing={handleParentSubmit}
+          />
+          {error ? <Text style={styles.error}>{error}</Text> : null}
+          <TouchableOpacity
+            style={[styles.primaryBtn, (!email || !password || loading) && styles.btnDisabled]}
+            onPress={handleParentSubmit}
+            disabled={!email || !password || loading}
+          >
+            <Text style={styles.primaryBtnText}>
+              {loading ? 'Please wait...' : isSignIn ? 'Sign In' : 'Create Family Account'}
+            </Text>
+          </TouchableOpacity>
+          {isSignIn && (
+            <TouchableOpacity onPress={() => { setShowForgotPassword(true); setResetEmail(email); setError(''); }}>
+              <Text style={styles.forgotText}>Forgot password?</Text>
+            </TouchableOpacity>
+          )}
+        </>
+      )}
+
       <TouchableOpacity style={styles.skipBtn} onPress={() => setMode('choose')}>
         <Text style={styles.skipBtnText}>← Back</Text>
       </TouchableOpacity>
@@ -189,4 +254,6 @@ const styles = StyleSheet.create({
   tabActive: { borderColor: '#f0e68c' },
   tabText: { fontSize: 14, fontWeight: '600', color: 'rgba(255,255,255,0.5)' },
   tabTextActive: { color: '#f0e68c' },
+  forgotText: { fontSize: 13, color: 'rgba(255,255,255,0.45)', textDecorationLine: 'underline' },
+  successText: { fontSize: 14, color: '#2ecc71', textAlign: 'center' },
 });

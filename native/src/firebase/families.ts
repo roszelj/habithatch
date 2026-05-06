@@ -74,3 +74,20 @@ export async function findFamilyByParent(parentUid: string): Promise<{ familyId:
   const familyDoc = snap.docs[0];
   return { familyId: familyDoc.id, joinCode: (familyDoc.data() as any).joinCode };
 }
+
+export async function removeProfile(familyId: string, profileId: string): Promise<void> {
+  await firestore().collection('families').doc(familyId).collection('profiles').doc(profileId).delete();
+}
+
+export async function deleteFamily(familyId: string, joinCode: string): Promise<void> {
+  try {
+    const notifSnap = await firestore().collection('families').doc(familyId).collection('notifications').get();
+    for (const d of notifSnap.docs) await d.ref.delete();
+  } catch {}
+
+  const profileSnap = await firestore().collection('families').doc(familyId).collection('profiles').get();
+  for (const d of profileSnap.docs) await d.ref.delete();
+
+  await firestore().collection('families').doc(familyId).delete();
+  await firestore().collection('joinCodes').doc(joinCode).delete();
+}

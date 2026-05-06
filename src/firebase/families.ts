@@ -1,4 +1,4 @@
-import { doc, setDoc, getDoc, getDocs, collection, query, where, serverTimestamp } from 'firebase/firestore';
+import { doc, setDoc, getDoc, getDocs, deleteDoc, collection, query, where, serverTimestamp } from 'firebase/firestore';
 import { db } from './config';
 import { type RewardPresent } from '../models/types';
 
@@ -73,4 +73,19 @@ export async function findFamilyByParent(parentUid: string): Promise<{ familyId:
   if (snap.empty) return null;
   const familyDoc = snap.docs[0];
   return { familyId: familyDoc.id, joinCode: familyDoc.data().joinCode };
+}
+
+export async function removeProfile(familyId: string, profileId: string): Promise<void> {
+  await deleteDoc(doc(db, 'families', familyId, 'profiles', profileId));
+}
+
+export async function deleteFamily(familyId: string, joinCode: string): Promise<void> {
+  const notifSnap = await getDocs(collection(db, 'families', familyId, 'notifications'));
+  for (const d of notifSnap.docs) await deleteDoc(d.ref);
+
+  const profileSnap = await getDocs(collection(db, 'families', familyId, 'profiles'));
+  for (const d of profileSnap.docs) await deleteDoc(d.ref);
+
+  await deleteDoc(doc(db, 'families', familyId));
+  await deleteDoc(doc(db, 'joinCodes', joinCode));
 }

@@ -92,7 +92,7 @@ export function PetFullscreen({ creatureType, creatureName, childName, habitatId
     setGamePhase('done');
   }
 
-  const resultEmoji = winningSegment?.type === 'coin-prize' ? '\u{1FA99}'
+  const resultEmoji = winningSegment?.type === 'coin-prize' ? '\u{1F4B0}'
     : winningSegment?.type === 'kindness-challenge' ? '\u{2764}\u{FE0F}'
     : '\u{1F605}';
 

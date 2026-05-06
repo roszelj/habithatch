@@ -269,6 +269,13 @@ export function isWeekend(): boolean {
   return day === 0 || day === 6;
 }
 
+export function getCurrentPeriod(): TimeActionType {
+  const hour = new Date().getHours();
+  if (hour < 12) return 'morning';
+  if (hour < 18) return 'afternoon';
+  return 'evening';
+}
+
 export function getActiveChores(profile: ChildProfile): CategoryChores {
   return isWeekend() ? profile.weekendChores : profile.weekdayChores;
 }

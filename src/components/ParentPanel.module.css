@@ -424,3 +424,135 @@
   color: rgba(180, 210, 255, 0.9);
   text-align: center;
 }
+
+.dangerZone {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  border: 1px solid rgba(231, 76, 60, 0.3);
+  border-radius: 10px;
+  padding: 12px;
+  margin-top: 8px;
+}
+
+.dangerZoneHeader {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: rgba(231, 76, 60, 0.8);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding-bottom: 6px;
+  border-bottom: 1px solid rgba(231, 76, 60, 0.2);
+}
+
+.dangerBtn {
+  padding: 9px 16px;
+  background: rgba(231, 76, 60, 0.1);
+  border: 1px solid rgba(231, 76, 60, 0.4);
+  border-radius: 8px;
+  color: #e74c3c;
+  font-family: inherit;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  text-align: left;
+}
+
+.dangerBtn:hover {
+  background: rgba(231, 76, 60, 0.2);
+}
+
+.modalOverlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.75);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 24px;
+}
+
+.modalBox {
+  background: #1e2d3d;
+  border: 1px solid rgba(231, 76, 60, 0.4);
+  border-radius: 14px;
+  padding: 24px;
+  width: 100%;
+  max-width: 400px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.modalTitle {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #e74c3c;
+}
+
+.modalWarning {
+  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.65);
+  line-height: 1.5;
+}
+
+.modalLabel {
+  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.55);
+}
+
+.modalInput {
+  padding: 10px 12px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 8px;
+  color: #fff;
+  font-family: inherit;
+  font-size: 0.95rem;
+  outline: none;
+}
+
+.modalInput:focus {
+  border-color: rgba(231, 76, 60, 0.5);
+}
+
+.modalError {
+  font-size: 0.8rem;
+  color: #e74c3c;
+}
+
+.modalActions {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+  margin-top: 4px;
+}
+
+.modalCancelBtn {
+  padding: 9px 18px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 8px;
+  color: rgba(255, 255, 255, 0.6);
+  font-family: inherit;
+  font-size: 0.9rem;
+  cursor: pointer;
+}
+
+.modalDeleteBtn {
+  padding: 9px 18px;
+  background: #e74c3c;
+  border: none;
+  border-radius: 8px;
+  color: #fff;
+  font-family: inherit;
+  font-size: 0.9rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.modalDeleteBtn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}

@@ -19,12 +19,13 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import {
   type CreatureType, type ChildProfile,
   MAX_PROFILES, createDefaultPoints, createDefaultChores, createDefaultStreak,
+  APP_DATA_KEY,
 } from './src/models/types';
 import { useAuth } from './src/hooks/useAuth';
 import { useLocalDataProvider, useCloudDataProvider } from './src/hooks/useDataProvider';
 import { registerFcmToken, subscribeFcmForeground } from './src/firebase/messaging';
-import { createFamily, lookupJoinCode, findFamilyByParent } from './src/firebase/families';
-import { signInAnonymous } from './src/firebase/auth';
+import { createFamily, lookupJoinCode, findFamilyByParent, deleteFamily, removeProfile } from './src/firebase/families';
+import { signInAnonymous, reauthenticateWithPassword, deleteCurrentUser } from './src/firebase/auth';
 import { loadAppDataAsync, generateProfileId } from './src/hooks/useSaveData';
 
 import { SelectionScreen } from './src/components/SelectionScreen';
@@ -81,12 +82,29 @@ function AppInner() {
 
     async function resolvePhase() {
       const savedData = await loadAppDataAsync();
-      if (firebaseAvailable && !user && !savedData) {
+      if (firebaseAvailable && !familyId && !savedData) {
         setPhase({ step: 'auth' });
         return;
       }
+      // Parent user exists but no familyId (e.g. app was deleted and reinstalled,
+      // Keychain preserved Firebase auth but AsyncStorage was cleared)
+      if (user && !user.isAnonymous && !familyId) {
+        const family = await findFamilyByParent(user.uid);
+        if (family) {
+          await AsyncStorage.setItem(FAMILY_ID_KEY, family.familyId);
+          setFamilyId(family.familyId);
+          setPhase({ step: 'profiles' });
+        } else {
+          setPhase({ step: 'auth' });
+        }
+        return;
+      }
       if (!savedData || savedData.profiles.length === 0) {
-        setPhase({ step: 'select' });
+        if (isCloudMode) {
+          setPhase({ step: 'profiles' });
+        } else {
+          setPhase({ step: 'select' });
+        }
         return;
       }
       if (savedData.profiles.length === 1) {
@@ -205,7 +223,7 @@ function AppInner() {
         {
           text: 'Reset', style: 'destructive', onPress: async () => {
             provider.clearAll();
-            await AsyncStorage.multiRemove([FAMILY_ID_KEY, DEVICE_PROFILE_KEY]);
+            await AsyncStorage.multiRemove([FAMILY_ID_KEY, DEVICE_PROFILE_KEY, 'terragucci_installed']);
             if (user) doSignOut().catch(() => {});
             setPhase({ step: 'auth' });
           },
@@ -213,6 +231,53 @@ function AppInner() {
       ]
     );
   }, [provider, user, doSignOut]);
+
+  const handleLogout = useCallback(() => {
+    Alert.alert(
+      'Log Out',
+      'Are you sure you want to log out? You will need to sign in again to continue.',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Log Out', style: 'destructive', onPress: async () => {
+            // Navigate away first so Game unmounts while still in cloud mode,
+            // before Firebase auth state changes and triggers a provider switch.
+            setFamilyId(null);
+            setPhase({ step: 'auth' });
+            await AsyncStorage.multiRemove([APP_DATA_KEY, FAMILY_ID_KEY, DEVICE_PROFILE_KEY, 'fcm_permission_denied']);
+            try { await doSignOut(); } catch {}
+          },
+        },
+      ]
+    );
+  }, [doSignOut]);
+
+  const handleDeleteAccount = useCallback(async (email: string, password: string) => {
+    if (user?.isAnonymous) {
+      // Sign in as parent first so we can delete the account
+      await signIn(email, password);
+    } else {
+      await reauthenticateWithPassword(password);
+    }
+    if (familyId) {
+      const joinCode = provider.cloudContext?.joinCode ?? '';
+      await deleteFamily(familyId, joinCode);
+    }
+    await deleteCurrentUser();
+    provider.clearAll();
+    await AsyncStorage.multiRemove([FAMILY_ID_KEY, DEVICE_PROFILE_KEY, 'terragucci_installed']);
+    setFamilyId(null);
+    setPhase({ step: 'auth' });
+  }, [familyId, provider, user, signIn]);
+
+  const handleRemoveProfile = useCallback(async (profileId: string) => {
+    if (familyId) await removeProfile(familyId, profileId);
+    const remaining = appData.profiles.filter(p => p.id !== profileId);
+    provider.updateAppData({ ...appData, profiles: remaining });
+    if (remaining.length === 0) {
+      setPhase({ step: 'select' });
+    }
+  }, [familyId, appData, provider]);
 
   const handleSwitchProfile = useCallback(() => {
     if (appData.profiles.length <= 1) return;
@@ -377,6 +442,9 @@ function AppInner() {
           onSwitchProfile={appData.profiles.length > 1 ? handleSwitchProfile : undefined}
           onAddChild={appData.profiles.length < MAX_PROFILES ? () => setPhase({ step: 'select' }) : undefined}
           onReset={appData.parentPin ? handleReset : undefined}
+          onLogout={isCloudMode ? handleLogout : undefined}
+          onDeleteAccount={isCloudMode ? handleDeleteAccount : undefined}
+          onRemoveProfile={isCloudMode ? handleRemoveProfile : undefined}
           joinCode={provider.cloudContext?.joinCode}
           onNotify={provider.notify}
           initialView={phase.asParent ? 'parent' : undefined}
