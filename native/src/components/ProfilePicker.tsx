@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, Image, ScrollView, StyleSheet } from 'react-native';
+import { useState, useRef, useEffect } from 'react';
+import { View, Text, TextInput, TouchableOpacity, Image, ScrollView, KeyboardAvoidingView, Platform, StyleSheet } from 'react-native';
 import { type ChildProfile } from '../models/types';
 import { CreatureSprite } from './CreatureSprite';
 
@@ -17,6 +17,13 @@ export function ProfilePicker({ profiles, canAdd, onSelect, onAddNew, parentPin,
   const [showPinEntry, setShowPinEntry] = useState(false);
   const [pin, setPin] = useState('');
   const [pinError, setPinError] = useState(false);
+  const scrollRef = useRef<ScrollView>(null);
+
+  useEffect(() => {
+    if (showPinEntry) {
+      setTimeout(() => scrollRef.current?.scrollToEnd({ animated: true }), 100);
+    }
+  }, [showPinEntry]);
 
   function handleParentClick() {
     if (!parentPin) {
@@ -38,7 +45,8 @@ export function ProfilePicker({ profiles, canAdd, onSelect, onAddNew, parentPin,
   }
 
   return (
-    <ScrollView contentContainerStyle={styles.screen} keyboardShouldPersistTaps="handled">
+    <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={{ flex: 1 }}>
+    <ScrollView ref={scrollRef} contentContainerStyle={styles.screen} keyboardShouldPersistTaps="handled">
       <Image source={require('../../assets/logo_header.png')} style={styles.logo} resizeMode="contain" />
       <Text style={styles.subtitle}>Who's playing?</Text>
 
@@ -99,6 +107,7 @@ export function ProfilePicker({ profiles, canAdd, onSelect, onAddNew, parentPin,
         </View>
       )}
     </ScrollView>
+    </KeyboardAvoidingView>
   );
 }
 
