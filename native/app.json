@@ -18,7 +18,9 @@
     },
     "owner": "thisjustin178",
     "updates": {
-      "url": "https://u.expo.dev/1e6f0c7b-2c4d-42e0-b37c-ce1309559739"
+      "url": "https://u.expo.dev/1e6f0c7b-2c4d-42e0-b37c-ce1309559739",
+      "enabled": true,
+      "checkAutomatically": "ON_LOAD"
     }
   }
 }
