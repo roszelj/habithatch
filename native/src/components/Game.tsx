@@ -96,6 +96,8 @@ export function Game({ profile, appData, onUpdateAppData, onSaveProfile, onSwitc
   const prevAllDone = useRef(streak.todayEarned);
 
   const [lastPlayedDate, setLastPlayedDate] = useState(profile.lastPlayedDate);
+  const [minigamePlays, setMinigamePlays] = useState(profile.minigamePlays ?? 0);
+  const [minigameWindowStart, setMinigameWindowStart] = useState<string | null>(profile.minigameWindowStart ?? null);
   const parentActive = parentPin !== null;
 
   const { triggerReset } = useDailyReset({
@@ -116,6 +118,18 @@ export function Game({ profile, appData, onUpdateAppData, onSaveProfile, onSwitc
   const earnCoins = useCallback((amount: number) => {
     setCoins(prev => Math.min(prev + amount, MAX_COINS));
   }, []);
+
+  const handleGamePlayed = useCallback(() => {
+    const now = Date.now();
+    const windowStart = minigameWindowStart ? new Date(minigameWindowStart).getTime() : null;
+    const windowExpired = !windowStart || (now - windowStart) >= 24 * 60 * 60 * 1000;
+    if (windowExpired) {
+      setMinigameWindowStart(new Date(now).toISOString());
+      setMinigamePlays(1);
+    } else {
+      setMinigamePlays(prev => prev + 1);
+    }
+  }, [minigameWindowStart]);
 
   // Detect all-chores-complete
   useEffect(() => {
@@ -167,7 +181,9 @@ export function Game({ profile, appData, onUpdateAppData, onSaveProfile, onSwitc
     creatureName,
     lastPlayedDate,
     isPaused,
-  }), [coins, chores, weekend, outfitId, accessoryId, ownedOutfits, ownedAccessories, habitatId, ownedHabitats, streak, redeemedRewards, creatureType, creatureName, lastPlayedDate, isPaused]);
+    minigamePlays,
+    minigameWindowStart,
+  }), [coins, chores, weekend, outfitId, accessoryId, ownedOutfits, ownedAccessories, habitatId, ownedHabitats, streak, redeemedRewards, creatureType, creatureName, lastPlayedDate, isPaused, minigamePlays, minigameWindowStart]);
 
   const buildProfileRef = useRef(buildProfile);
   buildProfileRef.current = buildProfile;
@@ -175,7 +191,7 @@ export function Game({ profile, appData, onUpdateAppData, onSaveProfile, onSwitc
   // Save on discrete user-driven data changes
   const prevSaveKey = useRef('');
   useEffect(() => {
-    const key = JSON.stringify({ coins, chores, outfitId, accessoryId, ownedOutfits, ownedAccessories, habitatId, ownedHabitats, streak, redeemedRewards, creatureType, creatureName, isPaused });
+    const key = JSON.stringify({ coins, chores, outfitId, accessoryId, ownedOutfits, ownedAccessories, habitatId, ownedHabitats, streak, redeemedRewards, creatureType, creatureName, isPaused, minigamePlays, minigameWindowStart });
     if (key === prevSaveKey.current) return;
     prevSaveKey.current = key;
     onSaveProfileRef.current(buildProfile());
@@ -741,6 +757,9 @@ export function Game({ profile, appData, onUpdateAppData, onSaveProfile, onSwitc
           onAwardCoins={(amount) => {
             setCoins(prev => Math.max(0, Math.min(prev + amount, MAX_COINS)));
           }}
+          minigamePlaysToday={minigamePlays}
+          minigameWindowStart={minigameWindowStart}
+          onGamePlayed={handleGamePlayed}
         />
       )}
       {showFoodMenu && (

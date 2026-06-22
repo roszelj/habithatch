@@ -154,6 +154,8 @@ export interface ChildProfile {
   lastPlayedDate: string;
   fcmTokens?: string[];
   isPaused?: boolean;
+  minigamePlays?: number;
+  minigameWindowStart?: string | null;
 }
 
 export const MAX_COINS = 9999;

@@ -17,9 +17,12 @@ interface PetFullscreenProps {
   habitatId: HabitatId | null;
   onClose: () => void;
   onAwardCoins?: (amount: number) => void;
+  minigamePlaysToday?: number;
+  minigameWindowStart?: string | null;
+  onGamePlayed?: () => void;
 }
 
-type GamePhase = 'greeting' | 'prompt' | 'wheel' | 'result' | 'tictactoe' | 'ttt-result' | 'trivia' | 'trivia-result' | 'done';
+type GamePhase = 'greeting' | 'prompt' | 'wheel' | 'result' | 'tictactoe' | 'ttt-result' | 'trivia' | 'trivia-result' | 'done' | 'limit';
 
 function getGreeting(name: string): string {
   const hour = new Date().getHours();
@@ -30,7 +33,7 @@ function getGreeting(name: string): string {
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 
-export function PetFullscreen({ creatureType, creatureName, childName, habitatId, onClose, onAwardCoins }: PetFullscreenProps) {
+export function PetFullscreen({ creatureType, creatureName, childName, habitatId, onClose, onAwardCoins, minigamePlaysToday = 0, minigameWindowStart, onGamePlayed }: PetFullscreenProps) {
   const [gamePhase, setGamePhase] = useState<GamePhase>('greeting');
   const [winningSegment, setWinningSegment] = useState<WheelSegment | null>(null);
   const [tttResult, setTttResult] = useState<TicTacToeResult | null>(null);
@@ -44,9 +47,25 @@ export function PetFullscreen({ creatureType, creatureName, childName, habitatId
     return () => clearTimeout(timer);
   }, []);
 
+  const playsRemaining = (() => {
+    const now = Date.now();
+    const windowStart = minigameWindowStart ? new Date(minigameWindowStart).getTime() : null;
+    const windowExpired = !windowStart || (now - windowStart) >= 24 * 60 * 60 * 1000;
+    return windowExpired ? 10 : Math.max(0, 10 - minigamePlaysToday);
+  })();
+
   const showCreature = gamePhase !== 'wheel' && gamePhase !== 'tictactoe' && gamePhase !== 'trivia';
 
   function handlePlayGame() {
+    const now = Date.now();
+    const windowStart = minigameWindowStart ? new Date(minigameWindowStart).getTime() : null;
+    const windowExpired = !windowStart || (now - windowStart) >= 24 * 60 * 60 * 1000;
+    const playsInWindow = windowExpired ? 0 : minigamePlaysToday;
+    if (playsInWindow >= 10) {
+      setGamePhase('limit');
+      return;
+    }
+    onGamePlayed?.();
     const game = pickMiniGame();
     if (game === 'spin-wheel') setGamePhase('wheel');
     else if (game === 'tictactoe') setGamePhase('tictactoe');
@@ -159,6 +178,9 @@ export function PetFullscreen({ creatureType, creatureName, childName, habitatId
                 {gamePhase === 'prompt' && (
                   <>
                     <Text style={styles.bubbleText}>Want to play a game?</Text>
+                    <Text style={playsRemaining === 0 ? styles.playsLabelEmpty : styles.playsLabel}>
+                      {'\u{1F3AE}'} {playsRemaining} {playsRemaining === 1 ? 'play' : 'plays'} left today
+                    </Text>
                     <View style={styles.promptButtons}>
                       <TouchableOpacity style={styles.yesBtn} onPress={handlePlayGame}>
                         <Text style={styles.yesBtnText}>Yes!</Text>
@@ -214,6 +236,16 @@ export function PetFullscreen({ creatureType, creatureName, childName, habitatId
             {gamePhase === 'done' && (
               <View style={styles.speechBubble}>
                 <Text style={styles.bubbleText}>{'\u{1F44B}'} See you later!</Text>
+              </View>
+            )}
+
+            {gamePhase === 'limit' && (
+              <View style={[styles.speechBubble, styles.limitBubble]}>
+                <Text style={styles.resultEmoji}>{'\u{1F634}'}</Text>
+                <Text style={styles.bubbleText}>That's all the games we can play for now</Text>
+                <TouchableOpacity style={styles.collectBtn} onPress={onClose}>
+                  <Text style={styles.collectBtnText}>OK</Text>
+                </TouchableOpacity>
               </View>
             )}
 
@@ -306,4 +338,7 @@ const styles = StyleSheet.create({
     borderRadius: 10,
   },
   collectBtnText: { fontSize: 16, fontWeight: '700', color: '#f0e68c' },
+  limitBubble: { backgroundColor: 'rgba(230,230,255,0.95)' },
+  playsLabel: { fontSize: 12, color: '#666', textAlign: 'center' },
+  playsLabelEmpty: { fontSize: 12, color: '#aaa', textAlign: 'center' },
 });

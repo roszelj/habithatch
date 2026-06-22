@@ -1,6 +1,6 @@
 # terragucci Development Guidelines
 
-Auto-generated from all feature plans. Last updated: 2026-04-28
+Auto-generated from all feature plans. Last updated: 2026-06-22
 
 ## Active Technologies
 - TypeScript 5.x (existing) + React 19, Vite 5, Firebase JS SDK v10 (012-firebase-multi-device)
@@ -49,6 +49,8 @@ Auto-generated from all feature plans. Last updated: 2026-04-28
 - Firestore (cloud) — `families/{fid}`, `families/{fid}/profiles/{pid}`, `families/{fid}/notifications/{nid}`, `joinCodes/{code}`; localStorage (web) / AsyncStorage (native) (041-account-deletion)
 - TypeScript 5.9 + React Native 0.81.5, Expo ~54, @react-native-firebase/auth v24, @react-native-async-storage/async-storage (042-logout-reset-nav)
 - AsyncStorage (all keys wiped on logout); Firestore cloud data preserved (042-logout-reset-nav)
+- TypeScript 5.9, React Native 0.81.5, Expo ~54 + @react-native-async-storage/async-storage, @react-native-firebase/firestore (043-minigame-play-limit)
+- AsyncStorage (local/guest mode) + Firestore (cloud mode) — existing `onSaveProfile` mechanism handles both (043-minigame-play-limit)
 
 - TypeScript 5.x + React 19, Vite 6 (001-virtual-pet-creature)
 
@@ -68,9 +70,9 @@ npm test && npm run lint
 TypeScript 5.x: Follow standard conventions
 
 ## Recent Changes
+- 043-minigame-play-limit: Added TypeScript 5.9, React Native 0.81.5, Expo ~54 + @react-native-async-storage/async-storage, @react-native-firebase/firestore
 - 042-logout-reset-nav: Added TypeScript 5.9 + React Native 0.81.5, Expo ~54, @react-native-firebase/auth v24, @react-native-async-storage/async-storage
 - 041-account-deletion: Added TypeScript 5.6 + React 19 (web); TypeScript 5.9 + React Native 0.81.5, Expo ~54 (mobile) + Firebase JS SDK v12 (web); @react-native-firebase v24 (native); React Native 0.81.5
-- 040-time-based-chores: Added TypeScript 5.9 + React Native 0.81.5, Expo ~54, React 19
 
 
 <!-- MANUAL ADDITIONS START -->
