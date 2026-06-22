@@ -34,7 +34,7 @@ export function HelpScreen({ onClose, showSwitchProfile }: HelpScreenProps) {
         <Text style={styles.backBtnText}>{'\u2190'} Back</Text>
       </TouchableOpacity>
       <ScrollView style={styles.scrollArea}>
-        <Text style={styles.sectionHeader}>{'\u{1F476}'} For Kids</Text>
+        <Text style={styles.sectionHeader}>{'\u{1F476}'} Help For Kids</Text>
         {kidTopics.map(topic => (
           <TouchableOpacity key={topic.id} style={styles.topicRow} onPress={() => setSelectedTopic(topic)}>
             <Text style={styles.topicTitle}>{topic.title}</Text>
@@ -43,7 +43,7 @@ export function HelpScreen({ onClose, showSwitchProfile }: HelpScreenProps) {
         ))}
 
         <Text style={[styles.sectionHeader, styles.sectionHeaderParent]}>
-          {'\u{1F9D1}\u200D\u{1F4BB}'} For Parents
+          {'\u{1F9D1}\u200D\u{1F4BB}'} Help For Parents
         </Text>
         {PARENT_HELP_TOPICS.map(topic => (
           <TouchableOpacity key={topic.id} style={[styles.topicRow, styles.topicRowParent]} onPress={() => setSelectedTopic(topic)}>
