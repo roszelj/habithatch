@@ -4,7 +4,7 @@
     "slug": "habithatch",
     "version": "1.2",
     "icon": "./assets/AppIcon.png",
-    "runtimeVersion": "1.0.0",
+    "runtimeVersion": "1.1.1",
     "android": {
       "package": "com.habithatch"
     },
