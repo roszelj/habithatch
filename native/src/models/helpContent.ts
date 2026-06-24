@@ -200,7 +200,7 @@ export const PARENT_HELP_TOPICS: HelpTopic[] = [
       'The Join Code lets you access the same family on a second device (e.g., a tablet and a phone). ' +
       'To find your code: in Parent Mode, look for the Join Code section — it shows a short alphanumeric code. ' +
       'On the second device: open HabitHatch, choose "Join a Family" on the setup screen, and enter the code. The device will sync all child profiles from the cloud. ' +
-      'Join Codes require a cloud connection. The code is specific to your family and does not change.',
+      'Join Codes requires a cloud connection. The code is specific to your family and does not change.',
     audience: 'parent',
   },
   {
